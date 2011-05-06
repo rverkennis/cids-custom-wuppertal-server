@@ -40,18 +40,38 @@ public final class AlkisConstants {
             EINZEL_NACHWEIS_SERVICE = SERVER + serviceProperties.getProperty("BUCH_NACHWEIS_SERVICE");
             LISTEN_NACHWEIS_SERVICE = SERVER + serviceProperties.getProperty("LISTEN_NACHWEIS_SERVICE");
             LIEGENSCHAFTSKARTE_SERVICE = SERVER + serviceProperties.getProperty("LIEGENSCHAFTSKARTE_SERVICE");
-            //            
+            //
             SRS_GEOM = serviceProperties.getProperty("SRS_GEOM");
             SRS_SERVICE = serviceProperties.getProperty("SRS_SERVICE");
             MAP_CALL_STRING = serviceProperties.getProperty("MAP_CALL_STRING") + SRS_GEOM;
             GEO_BUFFER = Double.parseDouble(serviceProperties.getProperty("GEO_BUFFER"));
 
-            //
+
+
+//            SERVER = "http://s102x283:8080";
+//            SERVICE = "Wuppertal";
+//            USER = "3awup";
+//            PASSWORD = "3awup";
+//            //
+//            CATALOG_SERVICE = "/AAAWebService/services/ALKISCatalogServices";
+//            INFO_SERVICE ="/AAAWebService/services/ALKISInfoServices";
+//            SEARCH_SERVICE = "/AAAWebService/services/ALKISSearchServices";
+//            //
+//            EINZEL_NACHWEIS_SERVICE = SERVER + "/ASWeb/ASA_AAAWeb/ALKISBuchNachweis";
+//            LISTEN_NACHWEIS_SERVICE = SERVER + "/ASWeb/ASA_AAAWeb/ALKISListenNachweis";
+//            LIEGENSCHAFTSKARTE_SERVICE = SERVER + "/ASWeb/ASA_AAAWeb/ALKISLiegenschaftskarte";
+//            //
+//            SRS_GEOM = "EPSG:25832";
+//            SRS_SERVICE = "EPSG:25832";
+//            MAP_CALL_STRING = "http://S102x284:8399/arcgis/services/3AWeb_Express_AGS1/MapServer/WMSServer?&VERSION=1.1.1&REQUEST=GetMap&BBOX=<cismap:boundingBox>&WIDTH=<cismap:width>&HEIGHT=<cismap:height>&FORMAT=image/png&TRANSPARENT=TRUE&BGCOLOR=0xF0F0F0&EXCEPTIONS=application/vnd.ogc.se_xml&LAYERS=34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52&STYLES=default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default&SRS=" + SRS_GEOM;
+//            GEO_BUFFER = 5.0;
+//
+//            //
             
 
 
         } catch (Exception ex) {
-//            log.error("AlkisCommons Error!", ex);
+            log.fatal("AlkisCommons Error!", ex);
             throw new RuntimeException(ex);
         }
     }

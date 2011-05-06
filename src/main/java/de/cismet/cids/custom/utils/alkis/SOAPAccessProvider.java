@@ -99,7 +99,12 @@ public final class SOAPAccessProvider {
             this.alkisSearchService = new ALKISSearchServicesServiceLocator().getALKISSearchServices(new URL(
                         searchService));
         } catch (Exception ex) {
-            throw new IllegalStateException("Can not create SOAPAccessProvider", ex);
+            throw new IllegalStateException("Can not create SOAPAccessProvider"+AlkisConstants.COMMONS.SERVER +"|"
+                    + AlkisConstants.COMMONS.CATALOG_SERVICE+"|"
+            +AlkisConstants.COMMONS.SERVER+"|"
+                    + AlkisConstants.COMMONS.INFO_SERVICE+"|"
+            +AlkisConstants.COMMONS.SERVER+"|"
+                    + AlkisConstants.COMMONS.SEARCH_SERVICE, ex);
         }
     }
 
