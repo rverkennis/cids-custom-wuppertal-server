@@ -19,6 +19,7 @@ package de.cismet.cids.custom.utils.alkis;
 import de.aedsicad.aaaweb.service.alkis.catalog.ALKISCatalogServices;
 import de.aedsicad.aaaweb.service.alkis.info.ALKISInfoServices;
 import de.aedsicad.aaaweb.service.alkis.search.ALKISSearchServices;
+import de.aedsicad.aaaweb.service.util.Buchungsblatt;
 import de.aedsicad.aaaweb.service.util.LandParcel;
 import de.aedsicad.aaaweb.service.util.Owner;
 import java.rmi.RemoteException;
@@ -35,18 +36,35 @@ public class AlkisSOAPSearch {
         ALKISCatalogServices catalog = access.getAlkisCatalogServices();
         ALKISInfoServices info = access.getAlkisInfoService();
         //aIdentityCard,aConfiguration,aSalutation,aForeName,aSurName,aBirthName, aDateOfBirth,aResidence,aAdministrativeUnitId,aMaxSearchTime
-        String[] ownersIds = search.searchOwnersWithAttributes(access.getIdentityCard(), access.getService(), null, "Lothar", "Fisch", null, null, null, null, 100000);
+//        searchService.searchOwnersWithAttributes(accessProvider.getIdentityCard(), accessProvider.getService(), salutation, vorname, name, geburtsname, geburtstag, null, null, TIMEOUT);
+        String[] ownersIds = search.searchOwnersWithAttributes(access.getIdentityCard(), access.getService(), "3000", null, "Gimmler", null, null, null, null, 100000);//"23.08.1971"
 //        String[] ownersIds = search.searchOwnersWithAttributes(access.getIdentityCard(), access.getService(), null, null, "Engemann", null, null, null, null, 10000);
 
-        Owner[] owners = info.getOwners(access.getIdentityCard(), access.getService(), ownersIds);
-        for (Owner o : owners) {
-            System.out.println(o.getForeName() + " " + o.getSurName());
+        if (ownersIds==null||ownersIds.length == 0) {
+            System.out.println("kein treffer");
+
+        } else {
+
+            Owner[] owners = info.getOwners(access.getIdentityCard(), access.getService(), ownersIds);
+            for (Owner o : owners) {
+                System.out.println(o.getOwnerId() + " " + o.getForeName() + " " + o.getSurName() + " " + o.getDateOfBirth() + " " + o.getNameOfBirth() + " " + o.getSalutationCode());
+            }
+            String[] fstckIds = search.searchParcelsWithOwner(access.getIdentityCard(), access.getService(), ownersIds, null);
+            //forceFullInfo = true
+            LandParcel[] result = info.getLandParcels(access.getIdentityCard(), access.getService(), fstckIds, true);
+            for (LandParcel lp : result) {
+                System.out.println(lp.getLocation().getLandParcelCode());
+            }
         }
-        String[] fstckIds = search.searchParcelsWithOwner(access.getIdentityCard(), access.getService(), ownersIds, null);
-        //forceFullInfo = true
-        LandParcel[] result = info.getLandParcels(access.getIdentityCard(), access.getService(), fstckIds, true);
-        for(LandParcel lp : result) {
-            System.out.println(lp.getLocation().getLandParcelCode());
-        }
+
+//        Owner[] os=info.getOwners(access.getIdentityCard(), access.getService(),ownersIds);
+//
+//        System.out.println("BBC over Owner:"+os[0].getBuchungsblattCode());
+
+
+
+//        Buchungsblatt b=access.getAlkisInfoService().getBuchungsblatt(access.getIdentityCard(), access.getService(),"053135-047669 ");
+//        System.out.println(b.getBuchungsblattCode());
+
     }
 }
