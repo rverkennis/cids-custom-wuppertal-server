@@ -37,24 +37,27 @@ public class AlkisSOAPSearch {
         ALKISInfoServices info = access.getAlkisInfoService();
         //aIdentityCard,aConfiguration,aSalutation,aForeName,aSurName,aBirthName, aDateOfBirth,aResidence,aAdministrativeUnitId,aMaxSearchTime
 //        searchService.searchOwnersWithAttributes(accessProvider.getIdentityCard(), accessProvider.getService(), salutation, vorname, name, geburtsname, geburtstag, null, null, TIMEOUT);
-        String[] ownersIds = search.searchOwnersWithAttributes(access.getIdentityCard(), access.getService(), "3000", null, "Gimmler", null, null, null, null, 100000);//"23.08.1971"
+        //String[] ownersIds = search.searchOwnersWithAttributes(access.getIdentityCard(), access.getService(), "3000", null, "Gimmler", null, null, null, null, 100000);//"23.08.1971"
+        long l=System.currentTimeMillis();
+        String[] ownersIds = search.searchOwnersWithAttributes(access.getIdentityCard(), access.getService(), null, null, "meier", null, null, null, null, 100000);//"23.08.1971"
 //        String[] ownersIds = search.searchOwnersWithAttributes(access.getIdentityCard(), access.getService(), null, null, "Engemann", null, null, null, null, 10000);
 
         if (ownersIds==null||ownersIds.length == 0) {
             System.out.println("kein treffer");
 
         } else {
-
-            Owner[] owners = info.getOwners(access.getIdentityCard(), access.getService(), ownersIds);
-            for (Owner o : owners) {
-                System.out.println(o.getOwnerId() + " " + o.getForeName() + " " + o.getSurName() + " " + o.getDateOfBirth() + " " + o.getNameOfBirth() + " " + o.getSalutationCode());
-            }
-            String[] fstckIds = search.searchParcelsWithOwner(access.getIdentityCard(), access.getService(), ownersIds, null);
-            //forceFullInfo = true
-            LandParcel[] result = info.getLandParcels(access.getIdentityCard(), access.getService(), fstckIds, true);
-            for (LandParcel lp : result) {
-                System.out.println(lp.getLocation().getLandParcelCode());
-            }
+            System.out.println(ownersIds.length);
+            System.out.println(System.currentTimeMillis()-l);
+//            Owner[] owners = info.getOwners(access.getIdentityCard(), access.getService(), ownersIds);
+//            for (Owner o : owners) {
+//                System.out.println(o.getOwnerId() + " " + o.getForeName() + " " + o.getSurName() + " " + o.getDateOfBirth() + " " + o.getNameOfBirth() + " " + o.getSalutationCode());
+//            }
+//            String[] fstckIds = search.searchParcelsWithOwner(access.getIdentityCard(), access.getService(), ownersIds, null);
+//            //forceFullInfo = true
+//            LandParcel[] result = info.getLandParcels(access.getIdentityCard(), access.getService(), fstckIds, true);
+//            for (LandParcel lp : result) {
+//                System.out.println(lp.getLocation().getLandParcelCode());
+//            }
         }
 
 //        Owner[] os=info.getOwners(access.getIdentityCard(), access.getService(),ownersIds);
