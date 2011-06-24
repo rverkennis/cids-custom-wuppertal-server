@@ -1,8 +1,7 @@
 package de.cismet.cids.custom.utils.alkis;
 
-import de.cismet.cids.custom.utils.alkis.AlkisConstants;
 
-import de.cismet.cids.custom.utils.alkis.AlkisProductDescription;
+import java.net.MalformedURLException;
 
 
 import org.jdom.Attribute;
@@ -22,6 +21,7 @@ import java.util.Map;
 import de.cismet.tools.PropertyReader;
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.tools.BrowserLauncher;
+import java.net.URL;
 
 import java.util.ArrayList;
 
@@ -168,6 +168,16 @@ public final class AlkisProducts {
         log.info("Open product URL : " + url);
         BrowserLauncher.openURLorFile(url);
     }
+    
+    /**
+     * Returns an URL object pointing to the Einzelnachweis of the given product.
+     *
+     * @param  objectID  The landparcel code
+     * @param  format      Which document to show
+     */
+    public URL productEinzelNachweisUrl(final String objectID, final String productCode) throws MalformedURLException {
+        return new URL(AlkisConstants.COMMONS.EINZEL_NACHWEIS_SERVICE + "?" + AlkisConstants.MLESSNUMBER + "&product=" + productCode + "&id=" + objectID + "&" + IDENTIFICATION);
+    }
 
     /**
      * DOCUMENT ME!
@@ -219,6 +229,15 @@ public final class AlkisProducts {
         final String url = AlkisConstants.COMMONS.LIEGENSCHAFTSKARTE_SERVICE + "?" + AlkisConstants.MLESSNUMBER + "&landparcel=" + parcelCode + "&" + IDENTIFICATION;
         log.info("Open product URL : " + url);
         BrowserLauncher.openURLorFile(url);
+    }
+    
+    /**
+     * Returns a URL object pointing to a map of the given landparcel.
+     *
+     * @param  parcelCode  The code of the landparcel.
+     */
+    public URL productKarteUrl(final String parcelCode) throws MalformedURLException {
+        return new URL(AlkisConstants.COMMONS.LIEGENSCHAFTSKARTE_SERVICE + "?" + AlkisConstants.MLESSNUMBER + "&landparcel=" + parcelCode + "&" + IDENTIFICATION);
     }
 
     /**
