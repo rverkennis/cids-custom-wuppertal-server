@@ -32,6 +32,8 @@ public final class AlkisConstants {
             SERVICE = serviceProperties.getProperty("SERVICE");
             USER = serviceProperties.getProperty("USER");
             PASSWORD = serviceProperties.getProperty("PASSWORD");
+
+            DEMOSERVICEURL = serviceProperties.getProperty("DEMOSERVICEURL");
             //
             CATALOG_SERVICE = serviceProperties.getProperty("CATALOG_SERVICE");
             INFO_SERVICE = serviceProperties.getProperty("INFO_SERVICE");
@@ -43,7 +45,7 @@ public final class AlkisConstants {
             //
             SRS_GEOM = serviceProperties.getProperty("SRS_GEOM");
             SRS_SERVICE = serviceProperties.getProperty("SRS_SERVICE");
-            MAP_CALL_STRING = serviceProperties.getProperty("MAP_CALL_STRING") + SRS_GEOM;
+            MAP_CALL_STRING = serviceProperties.getProperty("MAP_CALL_STRING") + SRS_SERVICE;
             GEO_BUFFER = Double.parseDouble(serviceProperties.getProperty("GEO_BUFFER"));
 
 
@@ -94,6 +96,9 @@ public final class AlkisConstants {
     public final String EINZEL_NACHWEIS_SERVICE;
     public final String LISTEN_NACHWEIS_SERVICE;
     public final String LIEGENSCHAFTSKARTE_SERVICE;
+
+    public final String DEMOSERVICEURL;
+
     //
     private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(AlkisConstants.class);
     public static final String NEWLINE = "<br>";
