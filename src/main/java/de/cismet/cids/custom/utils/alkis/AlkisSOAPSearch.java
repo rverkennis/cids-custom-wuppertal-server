@@ -38,7 +38,7 @@ public class AlkisSOAPSearch {
         //aIdentityCard,aConfiguration,aSalutation,aForeName,aSurName,aBirthName, aDateOfBirth,aResidence,aAdministrativeUnitId,aMaxSearchTime
 //        searchService.searchOwnersWithAttributes(accessProvider.getIdentityCard(), accessProvider.getService(), salutation, vorname, name, geburtsname, geburtstag, null, null, TIMEOUT);
         long l=System.currentTimeMillis();
-        String[] ownersIds = search.searchOwnersWithAttributes(access.getIdentityCard(), access.getService(), null, null, "Gimmler", null, "23.0718%", null, null, 100000);//"23.08.1971"
+        String[] ownersIds = search.searchOwnersWithAttributes(access.getIdentityCard(), access.getService(), null, null, "DRH Deutsche Reihenhaus AG", null, null, null, null, 100000);//"23.08.1971"
         
         //String[] ownersIds = search.searchOwnersWithAttributes(access.getIdentityCard(), access.getService(), null, null, "meier", null, null, null, null, 100000);//"23.08.1971"
 //        String[] ownersIds = search.searchOwnersWithAttributes(access.getIdentityCard(), access.getService(), null, null, "Engemann", null, null, null, null, 10000);
@@ -48,6 +48,7 @@ public class AlkisSOAPSearch {
 
         } else {
             System.out.println(ownersIds.length);
+            System.out.println(ownersIds[0]);
             System.out.println(System.currentTimeMillis()-l);
 //            Owner[] owners = info.getOwners(access.getIdentityCard(), access.getService(), ownersIds);
 //            for (Owner o : owners) {
