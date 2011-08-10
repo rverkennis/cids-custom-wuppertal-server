@@ -201,6 +201,16 @@ public final class AlkisProducts {
         log.info("Open product URL : " + url);
         BrowserLauncher.openURLorFile(url);
     }
+    
+    /**
+     * Returns a URL to a document for given points.
+     *
+     * @param  punktliste  The points.
+     * @param  format      The format of the document.
+     */
+    public URL productListenNachweisUrl(final String punktliste, final String productCode) throws MalformedURLException {
+        return new URL(AlkisConstants.COMMONS.LISTEN_NACHWEIS_SERVICE + "?" + AlkisConstants.MLESSNUMBER + "&product=" + productCode + "&ids=" + punktliste + "&" + IDENTIFICATION);
+    }
 
     /**
      * DOCUMENT ME!
