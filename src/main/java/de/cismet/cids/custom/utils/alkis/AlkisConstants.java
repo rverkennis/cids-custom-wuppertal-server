@@ -47,6 +47,7 @@ public final class AlkisConstants {
             SRS_SERVICE = serviceProperties.getProperty("SRS_SERVICE");
             MAP_CALL_STRING = serviceProperties.getProperty("MAP_CALL_STRING") + SRS_SERVICE;
             GEO_BUFFER = Double.parseDouble(serviceProperties.getProperty("GEO_BUFFER"));
+            GEO_BUFFER_MULTIPLIER = Double.parseDouble(serviceProperties.getProperty("GEO_BUFFER_MULTIPLIER"));
 
 
 
@@ -67,6 +68,7 @@ public final class AlkisConstants {
 //            SRS_SERVICE = "EPSG:25832";
 //            MAP_CALL_STRING = "http://S102x284:8399/arcgis/services/3AWeb_Express_AGS1/MapServer/WMSServer?&VERSION=1.1.1&REQUEST=GetMap&BBOX=<cismap:boundingBox>&WIDTH=<cismap:width>&HEIGHT=<cismap:height>&FORMAT=image/png&TRANSPARENT=TRUE&BGCOLOR=0xF0F0F0&EXCEPTIONS=application/vnd.ogc.se_xml&LAYERS=34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52&STYLES=default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default&SRS=" + SRS_GEOM;
 //            GEO_BUFFER = 5.0;
+//            GEO_BUFFER_MULTIPLIER = 0.5;
 //
 //            //
             
@@ -93,6 +95,7 @@ public final class AlkisConstants {
     public final String SRS_SERVICE;
     public final String MAP_CALL_STRING;
     public final double GEO_BUFFER;
+    public final double GEO_BUFFER_MULTIPLIER;
     public final String EINZEL_NACHWEIS_SERVICE;
     public final String LISTEN_NACHWEIS_SERVICE;
     public final String LIEGENSCHAFTSKARTE_SERVICE;
