@@ -149,7 +149,12 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                 query += " where";
                 query += " 1 = 1";
                 if ((blattnummer != null) && (blattnummer.length() > 0)) {
-                    query += " and l.blattnummer ~ '^[0]*" + blattnummer + "$'";
+                    //~*            case-insensitive pattern matching (see issue 2156)
+                    //^             beginning of line
+                    //[0]*          preceded by any amount of 0s
+                    //[[:alpha:]]?  possibly followed by one letter (issue 2156)
+                    //$             end of line
+                    query += " and l.blattnummer ~* '^[0]*" + blattnummer + "[[:alpha:]]?$'";
                 }
                 if (gueltig && ungueltig) {
                 } else {
