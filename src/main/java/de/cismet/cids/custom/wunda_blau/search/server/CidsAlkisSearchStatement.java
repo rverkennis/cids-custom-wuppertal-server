@@ -1,10 +1,10 @@
 /***************************************************
-*
-* cismet GmbH, Saarbruecken, Germany
-*
-*              ... and it just works.
-*
-****************************************************/
+ *
+ * cismet GmbH, Saarbruecken, Germany
+ *
+ *              ... and it just works.
+ *
+ ****************************************************/
 package de.cismet.cids.custom.wunda_blau.search.server;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
@@ -14,7 +14,6 @@ import Sirius.server.search.CidsServerSearch;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import de.aedsicad.aaaweb.service.alkis.info.ALKISInfoServices;
 import de.aedsicad.aaaweb.service.alkis.search.ALKISSearchServices;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -36,12 +35,10 @@ import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 public class CidsAlkisSearchStatement extends CidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
-
     public static String WILDCARD = "%";
     private static final int TIMEOUT = 100000;
 
     //~ Enums ------------------------------------------------------------------
-
     /**
      * DOCUMENT ME!
      *
@@ -50,7 +47,6 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
     public enum Resulttyp {
 
         //~ Enum constants -----------------------------------------------------
-
         FLURSTUECK, BUCHUNGSBLATT
     }
 
@@ -62,7 +58,6 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
     public enum SucheUeber {
 
         //~ Enum constants -----------------------------------------------------
-
         FLURSTUECKSNUMMER, BUCHUNGSBLATTNUMMER, EIGENTUEMER
     }
 
@@ -74,12 +69,9 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
     public enum Personentyp {
 
         //~ Enum constants -----------------------------------------------------
-
         MANN, FRAU, FIRMA
     }
-
     //~ Instance fields --------------------------------------------------------
-
     private Resulttyp resulttyp = Resulttyp.FLURSTUECK;
     private String name;
     private String vorname;
@@ -92,7 +84,6 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
     private Geometry geom = null;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new CidsAlkisSearchStatement object.
      *
@@ -114,6 +105,7 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
         }
         geom = g;
     }
+
     /**
      * Creates a new CidsBaulastSearchStatement object.
      *
@@ -147,7 +139,6 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     @Override
     public Collection performServerSearch() {
         final List<Node> result = new ArrayList<Node>();
@@ -167,8 +158,7 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
                     } else if (ptyp == Personentyp.FIRMA) {
                         salutation = "3000"; // NOI18N
                     }
-                    final String[] ownersIds = searchService.searchOwnersWithAttributes(accessProvider
-                                    .getIdentityCard(),
+                    final String[] ownersIds = searchService.searchOwnersWithAttributes(accessProvider.getIdentityCard(),
                             accessProvider.getService(),
                             salutation,
                             vorname,
@@ -189,14 +179,14 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
                         }
                         if (resulttyp == Resulttyp.FLURSTUECK) {
                             query =
-                                "select distinct (select id from cs_class where table_name ilike 'alkis_landparcel') as class_id, lp.id as object_id, lp.alkis_id from alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb,ownerofbb ,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and bb.buchungsblattcode = ownerofbb.bb and ownerofbb.ownerid in ("
-                                        + whereClauseBuilder
-                                        + ")";
+                                    "select distinct (select id from cs_class where table_name ilike 'alkis_landparcel') as class_id, lp.id as object_id, lp.alkis_id from alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb,ownerofbb ,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and bb.buchungsblattcode = ownerofbb.bb and ownerofbb.ownerid in ("
+                                    + whereClauseBuilder
+                                    + ")";
                         } else {
                             query =
-                                "select distinct (select id from cs_class where table_name ilike 'alkis_buchungsblatt') as class_id, jt.buchungsblatt as object_id,bb.buchungsblattcode from alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb,ownerofbb ,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and bb.buchungsblattcode = ownerofbb.bb and ownerofbb.ownerid in ("
-                                        + whereClauseBuilder
-                                        + ")";
+                                    "select distinct (select id from cs_class where table_name ilike 'alkis_buchungsblatt') as class_id, jt.buchungsblatt as object_id,bb.buchungsblattcode from alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb,ownerofbb ,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and bb.buchungsblattcode = ownerofbb.bb and ownerofbb.ownerid in ("
+                                    + whereClauseBuilder
+                                    + ")";
                         }
                         break;
                     }
@@ -205,16 +195,16 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
                 case BUCHUNGSBLATTNUMMER: {
                     if (resulttyp == Resulttyp.FLURSTUECK) {
                         query =
-                            "select distinct (select id from cs_class where table_name ilike 'alkis_landparcel') as class_id, lp.id as object_id, lp.alkis_id from alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb ,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and bb.buchungsblattcode ilike '"
-                                    + buchungsblattnummer
-                                    + WILDCARD
-                                    + "'";
+                                "select distinct (select id from cs_class where table_name ilike 'alkis_landparcel') as class_id, lp.id as object_id, lp.alkis_id from alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb ,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and bb.buchungsblattcode ilike '"
+                                + buchungsblattnummer
+                                + WILDCARD
+                                + "'";
                     } else {
                         query =
-                            "select distinct (select id from cs_class where table_name ilike 'alkis_buchungsblatt') as class_id, jt.buchungsblatt as object_id,bb.buchungsblattcode from alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb ,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and bb.buchungsblattcode ilike '"
-                                    + buchungsblattnummer
-                                    + WILDCARD
-                                    + "'";
+                                "select distinct (select id from cs_class where table_name ilike 'alkis_buchungsblatt') as class_id, jt.buchungsblatt as object_id,bb.buchungsblattcode from alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb ,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and bb.buchungsblattcode ilike '"
+                                + buchungsblattnummer
+                                + WILDCARD
+                                + "'";
                     }
                     break;
                 }
@@ -222,14 +212,14 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
                 case FLURSTUECKSNUMMER: {
                     if (resulttyp == Resulttyp.FLURSTUECK) {
                         query =
-                            "select distinct (select id from cs_class where table_name ilike 'alkis_landparcel') as class_id, lp.id as object_id, lp.alkis_id from alkis_landparcel lp ,geom where geom.id = lp.geometrie and lp.alkis_id ilike '"
-                                    + flurstuecksnummer
-                                    + "'";
+                                "select distinct (select id from cs_class where table_name ilike 'alkis_landparcel') as class_id, lp.id as object_id, lp.alkis_id from alkis_landparcel lp ,geom where geom.id = lp.geometrie and lp.alkis_id ilike '"
+                                + flurstuecksnummer
+                                + "'";
                     } else {
                         query =
-                            "select distinct (select id from cs_class where table_name ilike 'alkis_buchungsblatt') as class_id, jt.buchungsblatt as object_id,bb.buchungsblattcode from  alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and lp.alkis_id ilike '"
-                                    + flurstuecksnummer
-                                    + "'";
+                                "select distinct (select id from cs_class where table_name ilike 'alkis_buchungsblatt') as class_id, jt.buchungsblatt as object_id,bb.buchungsblattcode from  alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and lp.alkis_id ilike '"
+                                + flurstuecksnummer
+                                + "'";
                     }
                     break;
                 }
@@ -237,30 +227,30 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
             if (geom != null) {
                 final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geom);
                 query += " and intersects(geo_field,GeometryFromText('"
-                            + geostring
-                            + "'))";
+                        + geostring
+                        + "'))";
             }
 
             if (getLog().isInfoEnabled()) {
                 getLog().info("Search:\n" + query);
             }
-            
+
             if (query != null) {
-                final MetaService ms = (MetaService)getActiveLoaclServers().get("WUNDA_BLAU");
+                final MetaService ms = (MetaService) getActiveLoaclServers().get("WUNDA_BLAU");
 
                 final List<ArrayList> resultList = ms.performCustomSearch(query);
                 for (final ArrayList al : resultList) {
-                    final int cid = (Integer)al.get(0);
-                    final int oid = (Integer)al.get(1);
-                    final String nodename = (String)al.get(2);
+                    final int cid = (Integer) al.get(0);
+                    final int oid = (Integer) al.get(1);
+                    final String nodename = (String) al.get(2);
                     final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, nodename);
                     result.add(mon);
                 }
             }
         } catch (final Exception e) {
             getLog().error("Problem", e);
+            throw new RuntimeException(e);
         }
-
         return result;
     }
 }
