@@ -21,6 +21,7 @@ import java.util.Map;
 import de.cismet.tools.PropertyReader;
 import de.cismet.cids.dynamics.CidsBean;
 import de.cismet.tools.BrowserLauncher;
+import de.cismet.tools.StaticHtmlTools;
 import java.net.URL;
 
 import java.util.ArrayList;
@@ -311,18 +312,18 @@ public final class AlkisProducts {
         
         if ((zusText != null) && (zusText.length() > 0)) {
             url.append("&text=");
-            url.append(zusText);
+            url.append(StaticHtmlTools.encodeURLParameter(zusText));
         }
         if ((auftragsNr != null) && (auftragsNr.length() > 0)) {
             url.append("&ordernumber=");
-            url.append(auftragsNr);
+            url.append(StaticHtmlTools.encodeURLParameter(auftragsNr));
         }
         if (moreThanOneParcel) {
             url.append("&additionalLandparcel=true");
         }
         url.append('&');
         url.append(IDENTIFICATION);
-        
+       
         return new URL(url.toString());
     }
 }
