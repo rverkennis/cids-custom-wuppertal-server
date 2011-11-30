@@ -62,7 +62,7 @@ public class CustomStrassenSearchStatement extends CidsServerSearch {
         try {
             getLog().fatal("search started");
 
-            final MetaService ms = (MetaService)getActiveLoaclServers().get("WUNDA_BLAU");
+            final MetaService ms = (MetaService)getActiveLocalServers().get("WUNDA_BLAU");
 
             final MetaClass c = ms.getClassByTableName(getUser(), "strasse");
 

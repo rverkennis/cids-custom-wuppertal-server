@@ -194,7 +194,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
             }
 
             getLog().info("Search:\n" + query);
-            final MetaService ms = (MetaService) getActiveLoaclServers().get("WUNDA_BLAU");
+            final MetaService ms = (MetaService) getActiveLocalServers().get("WUNDA_BLAU");
             final List<ArrayList> resultList = ms.performCustomSearch(query);
             final List<Node> aln = new ArrayList<Node>();
             for (final ArrayList al : resultList) {

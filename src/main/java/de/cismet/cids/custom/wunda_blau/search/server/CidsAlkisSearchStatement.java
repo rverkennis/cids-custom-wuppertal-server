@@ -236,7 +236,7 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
             }
 
             if (query != null) {
-                final MetaService ms = (MetaService) getActiveLoaclServers().get("WUNDA_BLAU");
+                final MetaService ms = (MetaService) getActiveLocalServers().get("WUNDA_BLAU");
 
                 final List<ArrayList> resultList = ms.performCustomSearch(query);
                 for (final ArrayList al : resultList) {
