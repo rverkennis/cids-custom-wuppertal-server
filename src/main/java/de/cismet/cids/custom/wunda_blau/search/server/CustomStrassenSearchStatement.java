@@ -43,6 +43,8 @@ public class CustomStrassenSearchStatement extends CidsServerSearch {
     //~ Instance fields --------------------------------------------------------
 
     private String searchString;
+    private boolean caseSensitive;
+    private String geometry;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -51,8 +53,10 @@ public class CustomStrassenSearchStatement extends CidsServerSearch {
      *
      * @param  searchString  DOCUMENT ME!
      */
-    public CustomStrassenSearchStatement(final String searchString) {
+    public CustomStrassenSearchStatement(final String searchString, final String geometry, final boolean caseSensitive) {
         this.searchString = searchString;
+        this.geometry = geometry;
+        this.caseSensitive = caseSensitive;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -60,14 +64,17 @@ public class CustomStrassenSearchStatement extends CidsServerSearch {
     @Override
     public Collection performServerSearch() {
         try {
-            getLog().fatal("search started");
+            getLog().info("search started");
 
             final MetaService ms = (MetaService)getActiveLocalServers().get("WUNDA_BLAU");
 
             final MetaClass c = ms.getClassByTableName(getUser(), "strasse");
 
-            final String sql = "select strassenschluessel,name from strasse where name like '%" + searchString
-                        + "%' order by name desc";
+            String sql = "select strassenschluessel,name from strasse where lower(name) like lower('%" + searchString
+                        + "%') order by name desc";
+            if(caseSensitive) {
+                sql = "select strassenschluessel,name from strasse where name like '%" + searchString + "%' order by name desc";
+            }
 
             final ArrayList<ArrayList> result = ms.performCustomSearch(sql);
 
@@ -81,7 +88,7 @@ public class CustomStrassenSearchStatement extends CidsServerSearch {
             // Thread.sleep(5000);
             return aln;
         } catch (Exception e) {
-            getLog().fatal("Problem", e);
+            getLog().error("Problem", e);
             return null;
         }
     }
