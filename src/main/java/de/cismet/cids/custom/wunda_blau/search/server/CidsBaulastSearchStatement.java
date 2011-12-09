@@ -170,7 +170,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                 if (bounds != null) {
                     query += " and k.fs_referenz = f.id and f.umschreibendes_rechteck = g.id";
                     query += " and g.geo_field && GeometryFromText('" + bounds
-                            + "') and intersects(g.geo_field,GeometryFromText('" + bounds + "'))";
+                            + "',25832) and intersects(g.geo_field,GeometryFromText('" + bounds + "',25832))";
                 }
                 if (fsSearch) {
                     final FlurstueckInfo fi = flurstuecke.get(i);
