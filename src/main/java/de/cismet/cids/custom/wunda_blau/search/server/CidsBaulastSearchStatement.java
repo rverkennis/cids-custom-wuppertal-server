@@ -158,7 +158,6 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
             final String secondary = getSecondaryQuery();
             final MetaService ms = (MetaService)getActiveLoaclServers().get("WUNDA_BLAU");
             final List<ArrayList> primaryResultList = ms.performCustomSearch(primary);
-            final List<ArrayList> secondaryResultList = ms.performCustomSearch(secondary);
 
             final List<Node> aln = new ArrayList<Node>();
             for (final ArrayList al : primaryResultList) {
@@ -168,12 +167,17 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                 final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, name);
                 aln.add(mon);
             }
-            for (final ArrayList al : secondaryResultList) {
-                final int cid = (Integer)al.get(0);
-                final int oid = (Integer)al.get(1);
-                final String name = "<html><p><!--sorter:001 -->" + (String)al.get(2) + " (indirekt)" + "</p></html>";
-                final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, name);
-                aln.add(mon);
+
+            if ((flurstuecke != null) || (flurstuecke.size() > 0)) {
+                final List<ArrayList> secondaryResultList = ms.performCustomSearch(secondary);
+                for (final ArrayList al : secondaryResultList) {
+                    final int cid = (Integer)al.get(0);
+                    final int oid = (Integer)al.get(1);
+                    final String name = "<html><p><!--sorter:001 -->" + (String)al.get(2) + " (indirekt)"
+                                + "</p></html>";
+                    final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, name);
+                    aln.add(mon);
+                }
             }
             return aln;
         } catch (Exception e) {
