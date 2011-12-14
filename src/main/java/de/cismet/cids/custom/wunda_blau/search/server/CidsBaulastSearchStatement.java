@@ -168,7 +168,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                 aln.add(mon);
             }
 
-            if ((flurstuecke != null) || (flurstuecke.size() > 0)) {
+            if ((flurstuecke != null) && (flurstuecke.size() > 0)) {
                 final List<ArrayList> secondaryResultList = ms.performCustomSearch(secondary);
                 for (final ArrayList al : secondaryResultList) {
                     final int cid = (Integer)al.get(0);
