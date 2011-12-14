@@ -51,9 +51,13 @@ public class CustomStrassenSearchStatement extends CidsServerSearch {
     /**
      * Creates a new CustomStrassenSearchStatement object.
      *
-     * @param  searchString  DOCUMENT ME!
+     * @param  searchString   DOCUMENT ME!
+     * @param  geometry       DOCUMENT ME!
+     * @param  caseSensitive  DOCUMENT ME!
      */
-    public CustomStrassenSearchStatement(final String searchString, final String geometry, final boolean caseSensitive) {
+    public CustomStrassenSearchStatement(final String searchString,
+            final String geometry,
+            final boolean caseSensitive) {
         this.searchString = searchString;
         this.geometry = geometry;
         this.caseSensitive = caseSensitive;
@@ -72,8 +76,9 @@ public class CustomStrassenSearchStatement extends CidsServerSearch {
 
             String sql = "select strassenschluessel,name from strasse where lower(name) like lower('%" + searchString
                         + "%') order by name desc";
-            if(caseSensitive) {
-                sql = "select strassenschluessel,name from strasse where name like '%" + searchString + "%' order by name desc";
+            if (caseSensitive) {
+                sql = "select strassenschluessel,name from strasse where name like '%" + searchString
+                            + "%' order by name desc";
             }
 
             final ArrayList<ArrayList> result = ms.performCustomSearch(sql);

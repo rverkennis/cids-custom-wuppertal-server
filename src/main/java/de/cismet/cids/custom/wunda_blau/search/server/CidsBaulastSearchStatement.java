@@ -156,7 +156,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
         try {
             final String primary = getPrimaryQuery();
             final String secondary = getSecondaryQuery();
-            final MetaService ms = (MetaService)getActiveLoaclServers().get("WUNDA_BLAU");
+            final MetaService ms = (MetaService)getActiveLocalServers().get("WUNDA_BLAU");
             final List<ArrayList> primaryResultList = ms.performCustomSearch(primary);
 
             final List<Node> aln = new ArrayList<Node>();

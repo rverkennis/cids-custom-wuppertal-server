@@ -31,10 +31,16 @@ public class CustomAlkisPointSearchStatement extends CidsServerSearch {
     private static final String CIDSCLASS = "alkis_point";
     private static final String SQL =
         "SELECT id, pointcode FROM alkis_point WHERE pointcode like '%<searchString>%' ORDER BY pointcode DESC";
+    private static final String SQL_GEOM = "SELECT ap.id, ap.pointcode FROM alkis_point ap, geom g"
+                + " WHERE ap.geom = g.id"
+                + " AND ap.pointcode like '%<searchString>%'"
+                + " AND intersects(g.geo_field, envelope('<geometry>'::geometry))"
+                + " ORDER BY ap.pointcode DESC";
 
     //~ Instance fields --------------------------------------------------------
 
     private final String searchString;
+    private final String geometry;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -42,6 +48,7 @@ public class CustomAlkisPointSearchStatement extends CidsServerSearch {
      * Creates a new CustomAlkisPointSearchStatement object.
      *
      * @param  searchString  DOCUMENT ME!
+     * @param  geometry      DOCUMENT ME!
      */
     public CustomAlkisPointSearchStatement(final String searchString, final String geometry) {
         this.searchString = searchString;
@@ -53,7 +60,7 @@ public class CustomAlkisPointSearchStatement extends CidsServerSearch {
     @Override
     public Collection performServerSearch() {
         final String statement;
-        if(geometry != null && geometry.trim().length() > 0) {
+        if ((geometry != null) && (geometry.trim().length() > 0)) {
             statement = SQL_GEOM;
             getLog().info("Starting search for '" + searchString + "' and geometry '" + geometry + "'.");
         } else {
@@ -82,7 +89,8 @@ public class CustomAlkisPointSearchStatement extends CidsServerSearch {
             return result;
         }
 
-        final String sql = statement.replace("<searchString>", searchString).replace("<geometry>", geometry);;
+        final String sql = statement.replace("<searchString>", searchString).replace("<geometry>", geometry);
+        ;
         final ArrayList<ArrayList> resultset;
         try {
             resultset = metaService.performCustomSearch(sql);
