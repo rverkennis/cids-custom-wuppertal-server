@@ -1,19 +1,17 @@
 /***************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- *
- *              ... and it just works.
- *
- ****************************************************/
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.cismet.cids.custom.utils.alkis;
 
-
 import de.cismet.tools.PropertyReader;
-
 
 /**
  * DOCUMENT ME!
@@ -23,6 +21,44 @@ import de.cismet.tools.PropertyReader;
  */
 public final class AlkisConstants {
 
+    //~ Static fields/initializers ---------------------------------------------
+
+    public static final AlkisConstants COMMONS = new AlkisConstants();
+    public static final String MLESSNUMBER =
+        "nmless=5061756C612030352E31322E32303035204A75737475732032352E30372E323030382054616E6A612030362E31302E31393734";
+
+    //
+    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(AlkisConstants.class);
+    public static final String NEWLINE = "<br>";
+    public static final String LINK_SEPARATOR_TOKEN = "::";
+
+    //~ Instance fields --------------------------------------------------------
+
+    public final String USER;
+    public final String PASSWORD;
+    public final String SERVICE;
+    public final String SERVER;
+    public final String CATALOG_SERVICE;
+    public final String INFO_SERVICE;
+    public final String SEARCH_SERVICE;
+    public final String SRS_GEOM;
+    public final String SRS_SERVICE;
+    public final String MAP_CALL_STRING;
+    public final double GEO_BUFFER;
+    public final double GEO_BUFFER_MULTIPLIER;
+    public final String EINZEL_NACHWEIS_SERVICE;
+    public final String LISTEN_NACHWEIS_SERVICE;
+    public final String LIEGENSCHAFTSKARTE_SERVICE;
+
+    public final String DEMOSERVICEURL;
+
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new AlkisConstants object.
+     *
+     * @throws  RuntimeException  DOCUMENT ME!
+     */
     private AlkisConstants() {
         try {
             final PropertyReader serviceProperties = new PropertyReader(
@@ -49,8 +85,6 @@ public final class AlkisConstants {
             GEO_BUFFER = Double.parseDouble(serviceProperties.getProperty("GEO_BUFFER"));
             GEO_BUFFER_MULTIPLIER = Double.parseDouble(serviceProperties.getProperty("GEO_BUFFER_MULTIPLIER"));
 
-
-
 //            SERVER = "http://s102x283:8080";
 //            SERVICE = "Wuppertal";
 //            USER = "3awup";
@@ -71,40 +105,10 @@ public final class AlkisConstants {
 //            GEO_BUFFER_MULTIPLIER = 0.5;
 //
 //            //
-            
-
 
         } catch (Exception ex) {
             log.fatal("AlkisCommons Error!", ex);
             throw new RuntimeException(ex);
         }
     }
-    public static final AlkisConstants COMMONS = new AlkisConstants();
-    
-    public final String USER;
-    public final String PASSWORD;
-    public final String SERVICE;
-    public final String SERVER;
-    public final static String MLESSNUMBER = "nmless=5061756C612030352E31322E32303035204A75737475732032352E30372E323030382054616E6A612030362E31302E31393734";
-
-    ;
-    public final String CATALOG_SERVICE;
-    public final String INFO_SERVICE;
-    public final String SEARCH_SERVICE;
-    public final String SRS_GEOM;
-    public final String SRS_SERVICE;
-    public final String MAP_CALL_STRING;
-    public final double GEO_BUFFER;
-    public final double GEO_BUFFER_MULTIPLIER;
-    public final String EINZEL_NACHWEIS_SERVICE;
-    public final String LISTEN_NACHWEIS_SERVICE;
-    public final String LIEGENSCHAFTSKARTE_SERVICE;
-
-    public final String DEMOSERVICEURL;
-
-    //
-    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(AlkisConstants.class);
-    public static final String NEWLINE = "<br>";
-    public static final String LINK_SEPARATOR_TOKEN = "::";
-  
 }
