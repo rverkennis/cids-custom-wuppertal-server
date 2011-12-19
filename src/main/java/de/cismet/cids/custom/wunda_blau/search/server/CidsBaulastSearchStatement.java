@@ -241,7 +241,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
         final String queryMid = ""
                     + "\nSELECT " + baulastClassID + "  AS class_id, "
                     + "\n               l.id AS object_id, "
-                    + "\n               l.blattnummer, "
+                    + "\n               l.blattnummer ||' - ' || "
                     + "\n               l.laufende_nummer "
                     + "\n        FROM   alb_baulast l, "
                     + "\n               alb_baulast_baulastarten la, "
