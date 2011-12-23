@@ -307,7 +307,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                     + "\n               l.blattnummer|| '-' || l.laufende_nummer , "
                     + "\n               l.blattnummer, "
                     + "\n               l.laufende_nummer "
-                    + "\n        FROM   alb_baulast l, "
+                    + "\n        FROM   alb_baulast l "
                     + "\n               left outer join alb_baulast_baulastarten la on (l.id = la.baulast_reference) "
                     + "\n               left outer join alb_baulast_art a on (la.baulast_art = a.id),"
                     + "\n               alb_flurstueck_kicker k, "
