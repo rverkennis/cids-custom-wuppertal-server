@@ -241,12 +241,12 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
         final String queryMid = ""
                     + "\nSELECT " + baulastClassID + "  AS class_id, "
                     + "\n               l.id AS object_id, "
-                    + "\n               l.blattnummer|| '-' || l.laufende_nummer , "
+                    + "\n               l.blattnummer|| '-' || case when l.laufende_nummer is not null then l.laufende_nummer else 'keine laufende Nummer' end, "
                     + "\n               l.blattnummer , "
                     + "\n               l.laufende_nummer "
-                    + "\n        FROM   alb_baulast l, "
-                    + "\n               alb_baulast_baulastarten la, "
-                    + "\n               alb_baulast_art a, "
+                    + "\n        FROM   alb_baulast l "
+                    + "\n               left outer join alb_baulast_baulastarten la on (l.id = la.baulast_reference) "
+                    + "\n               left outer join alb_baulast_art a on (la.baulast_art = a.id),"
                     + "\n               (SELECT * "
                     + "\n                FROM   alb_baulast_flurstuecke_beguenstigt "
                     + "\n                UNION "
@@ -261,8 +261,6 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                     + "\n               AND fsj.flurstueck = k.id "
                     + "\n               AND k.fs_referenz = f.id "
                     + "\n               AND f.umschreibendes_rechteck = g.id "
-                    + "\n               AND l.id = la.baulast_reference "
-                    + "\n               AND la.baulast_art = a.id "
                     + "\n               "
                     + blattnummerquerypart               // --  AND l.blattnummer LIKE '^[0]*4711[[:alpha:]]?$'  "
                     + "\n               " + geoquerypart
@@ -310,8 +308,8 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                     + "\n               l.blattnummer, "
                     + "\n               l.laufende_nummer "
                     + "\n        FROM   alb_baulast l, "
-                    + "\n               alb_baulast_baulastarten la, "
-                    + "\n               alb_baulast_art a, "
+                    + "\n               left outer join alb_baulast_baulastarten la on (l.id = la.baulast_reference) "
+                    + "\n               left outer join alb_baulast_art a on (la.baulast_art = a.id),"
                     + "\n               alb_flurstueck_kicker k, "
                     + "\n               flurstueck f, "
                     + "\n               (SELECT * "
@@ -361,8 +359,6 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                     + "\n                                        AND l.id = fsj.baulast_reference "
                     + "\n                                        AND fsj.flurstueck = k.id "
                     + "\n                                        AND k.fs_referenz = f.id "
-                    + "\n                                        AND l.id = la.baulast_reference "
-                    + "\n                                        AND la.baulast_art = a.id "
                     + "\n                                        AND f.gemarkungs_nr = indirekt.gemarkung "
                     + "\n                                        AND f.flur = indirekt.flur "
                     + "\n                                        AND f.fstnr_z = indirekt.zaehler "
@@ -400,7 +396,8 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
         final BaulastSearchInfo bsi = new BaulastSearchInfo();
         bsi.setResult(Result.BAULASTBLATT);
 //        bsi.getFlurstuecke().add(new FlurstueckInfo(3135, "252", "576", "0"));
-        bsi.getFlurstuecke().add(new FlurstueckInfo(3279, "012", "1975", "402"));
+        // bsi.getFlurstuecke().add(new FlurstueckInfo(3279, "012", "1975", "402"));
+        bsi.setBlattnummer("9724");
 
         final CidsBaulastSearchStatement css = new CidsBaulastSearchStatement(bsi, 177, 182);
         System.out.println(css.getPrimaryQuery());
