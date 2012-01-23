@@ -165,6 +165,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                 final int oid = (Integer)al.get(1);
                 final String name = "<html><p><!--sorter:000 -->" + (String)al.get(2) + "</p></html>";
                 final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, name);
+//                mon.setIconString("/res/16/bewoelkt.png");
                 aln.add(mon);
             }
 
@@ -176,6 +177,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                     final String name = "<html><p><!--sorter:001 -->" + (String)al.get(2) + " (indirekt)"
                                 + "</p></html>";
                     final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, name);
+//                    mon.setIconString("/res/16/bewoelkt.png");
                     aln.add(mon);
                 }
             }
@@ -241,7 +243,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
         final String queryMid = ""
                     + "\nSELECT " + baulastClassID + "  AS class_id, "
                     + "\n               l.id AS object_id, "
-                    + "\n               l.blattnummer|| '-' || case when l.laufende_nummer is not null then l.laufende_nummer else 'keine laufende Nummer' end, "
+                    + "\n               l.blattnummer|| '/' || case when l.laufende_nummer is not null then l.laufende_nummer else 'keine laufende Nummer' end, "
                     + "\n               l.blattnummer , "
                     + "\n               l.laufende_nummer "
                     + "\n        FROM   alb_baulast l "
@@ -304,7 +306,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
         final String queryMid = ""
                     + "\n       SELECT " + baulastClassID + "  AS class_id, "
                     + "\n               l.id AS object_id, "
-                    + "\n               l.blattnummer|| '-' || case when l.laufende_nummer is not null then l.laufende_nummer else 'keine laufende Nummer' end, "
+                    + "\n               l.blattnummer|| '/' || case when l.laufende_nummer is not null then l.laufende_nummer else 'keine laufende Nummer' end, "
                     + "\n               l.blattnummer, "
                     + "\n               l.laufende_nummer "
                     + "\n        FROM   alb_baulast l "
