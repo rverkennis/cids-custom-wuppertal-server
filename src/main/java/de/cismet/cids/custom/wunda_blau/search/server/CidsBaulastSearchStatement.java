@@ -9,7 +9,6 @@ package de.cismet.cids.custom.wunda_blau.search.server;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
-import Sirius.server.middleware.types.Node;
 import Sirius.server.search.CidsServerSearch;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -159,12 +158,12 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
             final MetaService ms = (MetaService)getActiveLoaclServers().get("WUNDA_BLAU");
             final List<ArrayList> primaryResultList = ms.performCustomSearch(primary);
 
-            final List<Node> aln = new ArrayList<Node>();
+            final List<MetaObjectNode> aln = new ArrayList<MetaObjectNode>();
             for (final ArrayList al : primaryResultList) {
                 final int cid = (Integer)al.get(0);
                 final int oid = (Integer)al.get(1);
-                final String name = "<html><p><!--sorter:000 -->" + (String)al.get(2) + "</p></html>";
-                final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, name);
+//                final String name = "<html><p><!--sorter:000 -->" + (String)al.get(2) + "</p></html>";
+                final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, (String)al.get(2));
 //                mon.setIconString("/res/16/bewoelkt.png");
                 aln.add(mon);
             }
@@ -174,9 +173,14 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                 for (final ArrayList al : secondaryResultList) {
                     final int cid = (Integer)al.get(0);
                     final int oid = (Integer)al.get(1);
-                    final String name = "<html><p><!--sorter:001 -->" + (String)al.get(2) + " (indirekt)"
-                                + "</p></html>";
-                    final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, name);
+//                    final String name = "<html><p><!--sorter:001 -->" + (String)al.get(2) + " (indirekt)"
+//                                + "</p></html>";
+                    final MetaObjectNode mon = new MetaObjectNode(
+                            "WUNDA_BLAU",
+                            oid,
+                            cid,
+                            "indirekt: "
+                                    + (String)al.get(2));
 //                    mon.setIconString("/res/16/bewoelkt.png");
                     aln.add(mon);
                 }
