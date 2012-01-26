@@ -126,7 +126,8 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
             blattnummerquerypart = " and l.blattnummer ~* '^[0]*" + blattnummer + "[[:alpha:]]?$'";
         }
 
-        if (gueltig && ungueltig) {
+        if (!gueltig && !ungueltig) {
+            gueltigquerypart = " and false";
         } else {
             if (gueltig) {
                 gueltigquerypart = " and loeschungsdatum is null and geschlossen_am is null";
@@ -233,6 +234,31 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
      *
      * @return  DOCUMENT ME!
      */
+    private String getBelastetBeguenstigtSubselect() {
+        if (belastet || beguenstigt) {
+            String subselect = "";
+            subselect += " (";
+            if (beguenstigt) {
+                subselect += " select * from alb_baulast_flurstuecke_beguenstigt";
+                if (belastet) {
+                    subselect += " UNION";
+                }
+            }
+            if (belastet) {
+                subselect += " select * from alb_baulast_flurstuecke_belastet";
+            }
+            subselect += " ) as fsj";
+            return subselect;
+        } else {
+            return " (SELECT * FROM   alb_baulast_flurstuecke_beguenstigt where true=false) AS fsj";
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private String getPrimaryQuery() {
         String query = "";
 
@@ -253,12 +279,8 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                     + "\n        FROM   alb_baulast l "
                     + "\n               left outer join alb_baulast_baulastarten la on (l.id = la.baulast_reference) "
                     + "\n               left outer join alb_baulast_art a on (la.baulast_art = a.id),"
-                    + "\n               (SELECT * "
-                    + "\n                FROM   alb_baulast_flurstuecke_beguenstigt "
-                    + "\n                UNION "
-                    + "\n                SELECT * "
-                    + "\n                FROM   alb_baulast_flurstuecke_belastet) AS "
-                    + "\n               fsj, "
+                    + "\n" + getBelastetBeguenstigtSubselect()
+                    + "\n               , "
                     + "\n               alb_flurstueck_kicker k, "
                     + "\n               flurstueck f, "
                     + "\n               geom g "
@@ -318,12 +340,8 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                     + "\n               left outer join alb_baulast_art a on (la.baulast_art = a.id),"
                     + "\n               alb_flurstueck_kicker k, "
                     + "\n               flurstueck f, "
-                    + "\n               (SELECT * "
-                    + "\n                FROM   alb_baulast_flurstuecke_beguenstigt "
-                    + "\n                UNION "
-                    + "\n                SELECT * "
-                    + "\n                FROM   alb_baulast_flurstuecke_belastet) AS "
-                    + "\n               fsj, "
+                    + "\n" + getBelastetBeguenstigtSubselect()
+                    + "\n               , "
                     + "\n              (SELECT f.gemarkungs_nr gemarkung, "
                     + "\n                      f.flur          flur, "
                     + "\n                      f.fstnr_z       zaehler, "
