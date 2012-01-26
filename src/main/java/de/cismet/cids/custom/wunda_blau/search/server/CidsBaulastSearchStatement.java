@@ -126,13 +126,15 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
             blattnummerquerypart = " and l.blattnummer ~* '^[0]*" + blattnummer + "[[:alpha:]]?$'";
         }
 
-        if (!gueltig && !ungueltig) {
-            gueltigquerypart = " and false";
-        } else {
-            if (gueltig) {
-                gueltigquerypart = " and loeschungsdatum is null and geschlossen_am is null";
-            } else if (ungueltig) {
-                ungueltigquerypart = " and (loeschungsdatum is not null or geschlossen_am is not null)";
+        if (!(gueltig && ungueltig)) {
+            if (!gueltig && !ungueltig) {
+                gueltigquerypart = " and false";
+            } else {
+                if (gueltig) {
+                    gueltigquerypart = " and loeschungsdatum is null and geschlossen_am is null";
+                } else if (ungueltig) {
+                    ungueltigquerypart = " and (loeschungsdatum is not null or geschlossen_am is not null)";
+                }
             }
         }
 
