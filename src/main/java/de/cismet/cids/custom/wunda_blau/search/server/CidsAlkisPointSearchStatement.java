@@ -47,7 +47,7 @@ public class CidsAlkisPointSearchStatement extends CidsServerSearch {
         //~ Enum constants -----------------------------------------------------
 
         AUFNAHMEPUNKTE(4), SONSTIGE_VERMESSUNGSPUNKTE(5), GRENZPUNKTE(1), BESONDERE_GEBAEUDEPUNKTE(2),
-        BESONDERE_BAUWERKSPUNKTE(3);
+        BESONDERE_BAUWERKSPUNKTE(3), BESONDERE_TOPOGRAPHISCHE_PUNKTE(6);
 
         //~ Instance fields ----------------------------------------------------
 
