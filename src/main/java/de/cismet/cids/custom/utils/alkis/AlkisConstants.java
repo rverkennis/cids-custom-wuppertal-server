@@ -49,6 +49,8 @@ public final class AlkisConstants {
     public final String EINZEL_NACHWEIS_SERVICE;
     public final String LISTEN_NACHWEIS_SERVICE;
     public final String LIEGENSCHAFTSKARTE_SERVICE;
+    public final String NIVP_HOST;
+    public final String NIVP_PREFIX;
 
     public final String DEMOSERVICEURL;
 
@@ -84,6 +86,9 @@ public final class AlkisConstants {
             MAP_CALL_STRING = serviceProperties.getProperty("MAP_CALL_STRING") + SRS_SERVICE;
             GEO_BUFFER = Double.parseDouble(serviceProperties.getProperty("GEO_BUFFER"));
             GEO_BUFFER_MULTIPLIER = Double.parseDouble(serviceProperties.getProperty("GEO_BUFFER_MULTIPLIER"));
+
+            NIVP_HOST = serviceProperties.getProperty("NIVP_HOST");
+            NIVP_PREFIX = serviceProperties.getProperty("NIVP_PREFIX");
 
 //            SERVER = "http://s102x283:8080";
 //            SERVICE = "Wuppertal";
