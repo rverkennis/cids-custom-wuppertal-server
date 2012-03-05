@@ -347,6 +347,10 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
         final StringBuilder whereClauseBuilder = new StringBuilder();
         String conjunction = "WHERE ";
 
+        whereClauseBuilder.append(conjunction);
+        whereClauseBuilder.append("np.historisch = false");
+        conjunction = " AND ";
+
         if ((pointcode != null) && (pointcode.trim().length() > 0)) {
             whereClauseBuilder.append(conjunction);
             whereClauseBuilder.append("np.dgk_blattnummer || lpad(np.laufende_nummer, 3, '0') like '");
