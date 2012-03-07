@@ -51,6 +51,8 @@ public final class AlkisConstants {
     public final String LIEGENSCHAFTSKARTE_SERVICE;
     public final String NIVP_HOST;
     public final String NIVP_PREFIX;
+    public final String APMAPS_HOST;
+    public final String APMAPS_PREFIX;
 
     public final String DEMOSERVICEURL;
 
@@ -89,6 +91,9 @@ public final class AlkisConstants {
 
             NIVP_HOST = serviceProperties.getProperty("NIVP_HOST");
             NIVP_PREFIX = serviceProperties.getProperty("NIVP_PREFIX");
+
+            APMAPS_HOST = serviceProperties.getProperty("APMAPS_HOST");
+            APMAPS_PREFIX = serviceProperties.getProperty("APMAPS_PREFIX");
 
 //            SERVER = "http://s102x283:8080";
 //            SERVICE = "Wuppertal";
