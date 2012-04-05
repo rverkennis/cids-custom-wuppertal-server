@@ -266,13 +266,10 @@ public final class AlkisProducts {
      * @param   productCode  format The format of the document.
      *
      * @return  DOCUMENT ME!
-     *
-     * @throws  MalformedURLException  DOCUMENT ME!
      */
-    public URL productListenNachweisUrl(final String punktliste, final String productCode)
-            throws MalformedURLException {
-        return new URL(AlkisConstants.COMMONS.LISTEN_NACHWEIS_SERVICE + "?" + AlkisConstants.MLESSNUMBER + "&product="
-                        + productCode + "&ids=" + punktliste + "&" + IDENTIFICATION);
+    public String productListenNachweisUrl(final String punktliste, final String productCode) {
+        return AlkisConstants.COMMONS.LISTEN_NACHWEIS_SERVICE + "?" + AlkisConstants.MLESSNUMBER + "&product="
+                    + productCode + "&ids=" + punktliste + "&" + IDENTIFICATION;
     }
 
     /**
