@@ -250,8 +250,11 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
         }
 
         if ((flurstuecke != null) && !flurstuecke.isEmpty()) {
+            result.append(conjunction);
+            result.append('(');
+
             boolean firstFlurstueck = true;
-            int countOfFlurstueckeAdded = 0;
+
             final Iterator<Map<String, String>> flurstueckIterator = flurstuecke.iterator();
             while (flurstueckIterator.hasNext()) {
                 final Map<String, String> flurstueck = flurstueckIterator.next();
@@ -308,29 +311,22 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
                     flurstueckBuilder.append("vf.veraenderungsart::text LIKE \'");
                     flurstueckBuilder.append(veraenderungsart);
                     flurstueckBuilder.append('\'');
-
-                    flurstueckConjunction = " AND ";
                 }
 
                 if (flurstueckBuilder.length() > 0) {
                     if (!firstFlurstueck) {
                         result.append(" OR ");
                     } else {
-                        result.append(conjunction);
                         firstFlurstueck = false;
                     }
 
                     result.append('(');
                     result.append(flurstueckBuilder);
                     result.append(')');
-                    countOfFlurstueckeAdded++;
                 }
             }
 
-            if (countOfFlurstueckeAdded > 0) {
-                result.append(" GROUP BY class_id, vr.id, name HAVING count(DISTINCT vfk.id) = ");
-                result.append(countOfFlurstueckeAdded);
-            }
+            result.append(')');
         }
 
         return result.toString();
