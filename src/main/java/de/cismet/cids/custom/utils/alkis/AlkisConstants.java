@@ -53,10 +53,8 @@ public final class AlkisConstants {
     public final String NIVP_PREFIX;
     public final String APMAPS_HOST;
     public final String APMAPS_PREFIX;
-    public final String VERMESSUNG_TYPE_VERMESSUNGSRISS;
-    public final String VERMESSUNG_TYPE_ERGAENZENDEDOKUMENTE;
-    public final String VERMESSUNG_HOST;
-    public final String VERMESSUNG_FILESCHEME;
+    public final String VERMESSUNG_HOST_BILDER;
+    public final String VERMESSUNG_HOST_GRENZNIEDERSCHRIFTEN;
 
     public final String DEMOSERVICEURL;
 
@@ -99,11 +97,9 @@ public final class AlkisConstants {
             APMAPS_HOST = serviceProperties.getProperty("APMAPS_HOST");
             APMAPS_PREFIX = serviceProperties.getProperty("APMAPS_PREFIX");
 
-            VERMESSUNG_TYPE_VERMESSUNGSRISS = serviceProperties.getProperty("VERMESSUNG_TYPE_VERMESSUNGSRISS");
-            VERMESSUNG_TYPE_ERGAENZENDEDOKUMENTE = serviceProperties.getProperty(
-                    "VERMESSUNG_TYPE_ERGAENZENDEDOKUMENTE");
-            VERMESSUNG_HOST = serviceProperties.getProperty("VERMESSUNG_HOST");
-            VERMESSUNG_FILESCHEME = serviceProperties.getProperty("VERMESSUNG_FILESCHEME");
+            VERMESSUNG_HOST_BILDER = serviceProperties.getProperty("VERMESSUNG_HOST_BILDER");
+            VERMESSUNG_HOST_GRENZNIEDERSCHRIFTEN = serviceProperties.getProperty(
+                    "VERMESSUNG_HOST_GRENZNIEDERSCHRIFTEN");
 
 //            SERVER = "http://s102x283:8080";
 //            SERVICE = "Wuppertal";
