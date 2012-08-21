@@ -38,7 +38,7 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
     private static final String SQL = "SELECT"
                 + " DISTINCT (SELECT c.id FROM cs_class c WHERE table_name ilike '" + CIDSCLASS + "') as class_id,"
                 + " vr.id,"
-                + " vr.schluessel||'-'||vr.gemarkung||'-'||vr.flur||'/'||vr.blatt as name"
+                + " vr.schluessel||' - '||vr.gemarkung||' - '||vr.flur||' - '||vr.blatt as name"
                 + " FROM <fromClause>"
                 + " <whereClause>"
                 + " ORDER BY name";
