@@ -38,11 +38,11 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
     private static final String SQL = "SELECT"
                 + " DISTINCT (SELECT c.id FROM cs_class c WHERE table_name ilike '" + CIDSCLASS + "') as class_id,"
                 + " vr.id,"
-                + " vr.schluessel||'-'||vr.gemarkung||'-'||vr.flur||'/'||vr.blatt as name"
+                + " vr.schluessel||' - '||vg.name||' - '||vr.flur||' - '||vr.blatt as name"
                 + " FROM <fromClause>"
                 + " <whereClause>"
                 + " ORDER BY name";
-    private static final String FROM = CIDSCLASS + " vr";
+    private static final String FROM = CIDSCLASS + " vr JOIN vermessung_gemarkung vg ON vr.gemarkung = vg.id";
     private static final String JOIN_KICKER =
         " JOIN vermessung_riss_flurstuecksvermessung vrf ON vr.id = vrf.vermessung_riss_reference"
                 + " JOIN vermessung_flurstuecksvermessung vf ON vrf.flurstuecksvermessung = vf.id"
