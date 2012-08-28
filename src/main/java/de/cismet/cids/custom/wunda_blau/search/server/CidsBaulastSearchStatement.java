@@ -191,7 +191,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
             return aln;
         } catch (Exception e) {
             getLog().error("Problem der Baulastensuche", e);
-            return Collections.EMPTY_LIST;
+            throw new RuntimeException("Problem der Baulastensuche", e);
         }
     }
 
