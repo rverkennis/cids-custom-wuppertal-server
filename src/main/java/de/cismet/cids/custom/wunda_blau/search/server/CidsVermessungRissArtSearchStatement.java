@@ -35,7 +35,7 @@ public class CidsVermessungRissArtSearchStatement extends CidsServerSearch {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final String DOMAIN = "WUNDA_BLAU";
-    private static final String CIDSCLASS = "vermessung_art"; 
+    private static final String CIDSCLASS = "vermessung_art";
 
     private static final String SQL = "SELECT"
                 + " DISTINCT (SELECT c.id FROM cs_class c WHERE table_name ilike '" + CIDSCLASS + "') as class_id,"
