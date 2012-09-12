@@ -64,7 +64,7 @@ public class CidsVermessungRissArtSearchStatement extends CidsServerSearch {
 
     @Override
     public Collection performServerSearch() {
-        final Collection result = new LinkedList();
+        final Collection result = new LinkedList(); 
 
         if (getLog().isDebugEnabled()) {
             getLog().debug("Search for all geometry states started.");
