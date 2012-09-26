@@ -64,6 +64,7 @@ public class CidsVermessungRissArtSearchStatement extends CidsServerSearch {
 
     @Override
     public Collection performServerSearch() {
+        
         final Collection result = new LinkedList();
 
         if (getLog().isDebugEnabled()) {
