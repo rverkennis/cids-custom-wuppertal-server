@@ -167,7 +167,7 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
             return result;
         }
 
-        final MetaService metaService = (MetaService)getActiveLoaclServers().get(DOMAIN);
+        final MetaService metaService = (MetaService)getActiveLocalServers().get(DOMAIN);
         if (metaService == null) {
             getLog().error("Could not retrieve MetaService '" + DOMAIN + "'.");
             return result;
