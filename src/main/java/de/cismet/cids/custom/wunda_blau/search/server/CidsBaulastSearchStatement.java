@@ -9,7 +9,6 @@ package de.cismet.cids.custom.wunda_blau.search.server;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
-import Sirius.server.middleware.types.Node;
 import Sirius.server.search.CidsServerSearch;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -127,12 +126,15 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
             blattnummerquerypart = " and l.blattnummer ~* '^[0]*" + blattnummer + "[[:alpha:]]?$'";
         }
 
-        if (gueltig && ungueltig) {
-        } else {
-            if (gueltig) {
-                gueltigquerypart = " and loeschungsdatum is null and geschlossen_am is null";
-            } else if (ungueltig) {
-                ungueltigquerypart = " and (loeschungsdatum is not null or geschlossen_am is not null)";
+        if (!(gueltig && ungueltig)) {
+            if (!gueltig && !ungueltig) {
+                gueltigquerypart = " and false";
+            } else {
+                if (gueltig) {
+                    gueltigquerypart = " and loeschungsdatum is null and geschlossen_am is null";
+                } else if (ungueltig) {
+                    ungueltigquerypart = " and (loeschungsdatum is not null or geschlossen_am is not null)";
+                }
             }
         }
 
@@ -159,12 +161,13 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
             final MetaService ms = (MetaService)getActiveLocalServers().get("WUNDA_BLAU");
             final List<ArrayList> primaryResultList = ms.performCustomSearch(primary);
 
-            final List<Node> aln = new ArrayList<Node>();
+            final List<MetaObjectNode> aln = new ArrayList<MetaObjectNode>();
             for (final ArrayList al : primaryResultList) {
                 final int cid = (Integer)al.get(0);
                 final int oid = (Integer)al.get(1);
-                final String name = "<html><p><!--sorter:000 -->" + (String)al.get(2) + "</p></html>";
-                final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, name);
+//                final String name = "<html><p><!--sorter:000 -->" + (String)al.get(2) + "</p></html>";
+                final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, (String)al.get(2));
+//                mon.setIconString("/res/16/bewoelkt.png");
                 aln.add(mon);
             }
 
@@ -173,16 +176,22 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                 for (final ArrayList al : secondaryResultList) {
                     final int cid = (Integer)al.get(0);
                     final int oid = (Integer)al.get(1);
-                    final String name = "<html><p><!--sorter:001 -->" + (String)al.get(2) + " (indirekt)"
-                                + "</p></html>";
-                    final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, name);
+//                    final String name = "<html><p><!--sorter:001 -->" + (String)al.get(2) + " (indirekt)"
+//                                + "</p></html>";
+                    final MetaObjectNode mon = new MetaObjectNode(
+                            "WUNDA_BLAU",
+                            oid,
+                            cid,
+                            "indirekt: "
+                                    + (String)al.get(2));
+//                    mon.setIconString("/res/16/bewoelkt.png");
                     aln.add(mon);
                 }
             }
             return aln;
         } catch (Exception e) {
             getLog().error("Problem der Baulastensuche", e);
-            return Collections.EMPTY_LIST;
+            throw new RuntimeException("Problem der Baulastensuche", e);
         }
     }
 
@@ -227,6 +236,31 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
      *
      * @return  DOCUMENT ME!
      */
+    private String getBelastetBeguenstigtSubselect() {
+        if (belastet || beguenstigt) {
+            String subselect = "";
+            subselect += " (";
+            if (beguenstigt) {
+                subselect += " select * from alb_baulast_flurstuecke_beguenstigt";
+                if (belastet) {
+                    subselect += " UNION";
+                }
+            }
+            if (belastet) {
+                subselect += " select * from alb_baulast_flurstuecke_belastet";
+            }
+            subselect += " ) as fsj";
+            return subselect;
+        } else {
+            return " (SELECT * FROM   alb_baulast_flurstuecke_beguenstigt where true=false) AS fsj";
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
     private String getPrimaryQuery() {
         String query = "";
 
@@ -241,17 +275,14 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
         final String queryMid = ""
                     + "\nSELECT " + baulastClassID + "  AS class_id, "
                     + "\n               l.id AS object_id, "
-                    + "\n               l.blattnummer, "
+                    + "\n               l.blattnummer|| '/' || case when l.laufende_nummer is not null then l.laufende_nummer else 'keine laufende Nummer' end, "
+                    + "\n               l.blattnummer , "
                     + "\n               l.laufende_nummer "
-                    + "\n        FROM   alb_baulast l, "
-                    + "\n               alb_baulast_baulastarten la, "
-                    + "\n               alb_baulast_art a, "
-                    + "\n               (SELECT * "
-                    + "\n                FROM   alb_baulast_flurstuecke_beguenstigt "
-                    + "\n                UNION "
-                    + "\n                SELECT * "
-                    + "\n                FROM   alb_baulast_flurstuecke_belastet) AS "
-                    + "\n               fsj, "
+                    + "\n        FROM   alb_baulast l "
+                    + "\n               left outer join alb_baulast_baulastarten la on (l.id = la.baulast_reference) "
+                    + "\n               left outer join alb_baulast_art a on (la.baulast_art = a.id),"
+                    + "\n" + getBelastetBeguenstigtSubselect()
+                    + "\n               , "
                     + "\n               alb_flurstueck_kicker k, "
                     + "\n               flurstueck f, "
                     + "\n               geom g "
@@ -260,8 +291,6 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                     + "\n               AND fsj.flurstueck = k.id "
                     + "\n               AND k.fs_referenz = f.id "
                     + "\n               AND f.umschreibendes_rechteck = g.id "
-                    + "\n               AND l.id = la.baulast_reference "
-                    + "\n               AND la.baulast_art = a.id "
                     + "\n               "
                     + blattnummerquerypart               // --  AND l.blattnummer LIKE '^[0]*4711[[:alpha:]]?$'  "
                     + "\n               " + geoquerypart
@@ -305,19 +334,16 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
         final String queryMid = ""
                     + "\n       SELECT " + baulastClassID + "  AS class_id, "
                     + "\n               l.id AS object_id, "
+                    + "\n               l.blattnummer|| '/' || case when l.laufende_nummer is not null then l.laufende_nummer else 'keine laufende Nummer' end, "
                     + "\n               l.blattnummer, "
                     + "\n               l.laufende_nummer "
-                    + "\n        FROM   alb_baulast l, "
-                    + "\n               alb_baulast_baulastarten la, "
-                    + "\n               alb_baulast_art a, "
+                    + "\n        FROM   alb_baulast l "
+                    + "\n               left outer join alb_baulast_baulastarten la on (l.id = la.baulast_reference) "
+                    + "\n               left outer join alb_baulast_art a on (la.baulast_art = a.id),"
                     + "\n               alb_flurstueck_kicker k, "
                     + "\n               flurstueck f, "
-                    + "\n               (SELECT * "
-                    + "\n                FROM   alb_baulast_flurstuecke_beguenstigt "
-                    + "\n                UNION "
-                    + "\n                SELECT * "
-                    + "\n                FROM   alb_baulast_flurstuecke_belastet) AS "
-                    + "\n               fsj, "
+                    + "\n" + getBelastetBeguenstigtSubselect()
+                    + "\n               , "
                     + "\n              (SELECT f.gemarkungs_nr gemarkung, "
                     + "\n                      f.flur          flur, "
                     + "\n                      f.fstnr_z       zaehler, "
@@ -359,8 +385,6 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                     + "\n                                        AND l.id = fsj.baulast_reference "
                     + "\n                                        AND fsj.flurstueck = k.id "
                     + "\n                                        AND k.fs_referenz = f.id "
-                    + "\n                                        AND l.id = la.baulast_reference "
-                    + "\n                                        AND la.baulast_art = a.id "
                     + "\n                                        AND f.gemarkungs_nr = indirekt.gemarkung "
                     + "\n                                        AND f.flur = indirekt.flur "
                     + "\n                                        AND f.fstnr_z = indirekt.zaehler "
@@ -398,7 +422,8 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
         final BaulastSearchInfo bsi = new BaulastSearchInfo();
         bsi.setResult(Result.BAULASTBLATT);
 //        bsi.getFlurstuecke().add(new FlurstueckInfo(3135, "252", "576", "0"));
-        bsi.getFlurstuecke().add(new FlurstueckInfo(3279, "012", "1975", "402"));
+        // bsi.getFlurstuecke().add(new FlurstueckInfo(3279, "012", "1975", "402"));
+        bsi.setBlattnummer("9724");
 
         final CidsBaulastSearchStatement css = new CidsBaulastSearchStatement(bsi, 177, 182);
         System.out.println(css.getPrimaryQuery());

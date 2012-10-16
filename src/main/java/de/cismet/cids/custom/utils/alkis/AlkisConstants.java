@@ -49,6 +49,12 @@ public final class AlkisConstants {
     public final String EINZEL_NACHWEIS_SERVICE;
     public final String LISTEN_NACHWEIS_SERVICE;
     public final String LIEGENSCHAFTSKARTE_SERVICE;
+    public final String NIVP_HOST;
+    public final String NIVP_PREFIX;
+    public final String APMAPS_HOST;
+    public final String APMAPS_PREFIX;
+    public final String VERMESSUNG_HOST_BILDER;
+    public final String VERMESSUNG_HOST_GRENZNIEDERSCHRIFTEN;
 
     public final String DEMOSERVICEURL;
 
@@ -70,43 +76,31 @@ public final class AlkisConstants {
             PASSWORD = serviceProperties.getProperty("PASSWORD");
 
             DEMOSERVICEURL = serviceProperties.getProperty("DEMOSERVICEURL");
-            //
+
             CATALOG_SERVICE = serviceProperties.getProperty("CATALOG_SERVICE");
             INFO_SERVICE = serviceProperties.getProperty("INFO_SERVICE");
             SEARCH_SERVICE = serviceProperties.getProperty("SEARCH_SERVICE");
-            //
+
             EINZEL_NACHWEIS_SERVICE = SERVER + serviceProperties.getProperty("BUCH_NACHWEIS_SERVICE");
             LISTEN_NACHWEIS_SERVICE = SERVER + serviceProperties.getProperty("LISTEN_NACHWEIS_SERVICE");
             LIEGENSCHAFTSKARTE_SERVICE = SERVER + serviceProperties.getProperty("LIEGENSCHAFTSKARTE_SERVICE");
-            //
+
             SRS_GEOM = serviceProperties.getProperty("SRS_GEOM");
             SRS_SERVICE = serviceProperties.getProperty("SRS_SERVICE");
             MAP_CALL_STRING = serviceProperties.getProperty("MAP_CALL_STRING") + SRS_SERVICE;
             GEO_BUFFER = Double.parseDouble(serviceProperties.getProperty("GEO_BUFFER"));
             GEO_BUFFER_MULTIPLIER = Double.parseDouble(serviceProperties.getProperty("GEO_BUFFER_MULTIPLIER"));
 
-//            SERVER = "http://s102x283:8080";
-//            SERVICE = "Wuppertal";
-//            USER = "3awup";
-//            PASSWORD = "3awup";
-//            //
-//            CATALOG_SERVICE = "/AAAWebService/services/ALKISCatalogServices";
-//            INFO_SERVICE ="/AAAWebService/services/ALKISInfoServices";
-//            SEARCH_SERVICE = "/AAAWebService/services/ALKISSearchServices";
-//            //
-//            EINZEL_NACHWEIS_SERVICE = SERVER + "/ASWeb/ASA_AAAWeb/ALKISBuchNachweis";
-//            LISTEN_NACHWEIS_SERVICE = SERVER + "/ASWeb/ASA_AAAWeb/ALKISListenNachweis";
-//            LIEGENSCHAFTSKARTE_SERVICE = SERVER + "/ASWeb/ASA_AAAWeb/ALKISLiegenschaftskarte";
-//            //
-//            SRS_GEOM = "EPSG:25832";
-//            SRS_SERVICE = "EPSG:25832";
-//            MAP_CALL_STRING = "http://S102x284:8399/arcgis/services/3AWeb_Express_AGS1/MapServer/WMSServer?&VERSION=1.1.1&REQUEST=GetMap&BBOX=<cismap:boundingBox>&WIDTH=<cismap:width>&HEIGHT=<cismap:height>&FORMAT=image/png&TRANSPARENT=TRUE&BGCOLOR=0xF0F0F0&EXCEPTIONS=application/vnd.ogc.se_xml&LAYERS=34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52&STYLES=default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default,default&SRS=" + SRS_GEOM;
-//            GEO_BUFFER = 5.0;
-//            GEO_BUFFER_MULTIPLIER = 0.5;
-//
-//            //
+            NIVP_HOST = serviceProperties.getProperty("NIVP_HOST");
+            NIVP_PREFIX = serviceProperties.getProperty("NIVP_PREFIX");
 
-        } catch (Exception ex) {
+            APMAPS_HOST = serviceProperties.getProperty("APMAPS_HOST");
+            APMAPS_PREFIX = serviceProperties.getProperty("APMAPS_PREFIX");
+
+            VERMESSUNG_HOST_BILDER = serviceProperties.getProperty("VERMESSUNG_HOST_BILDER");
+            VERMESSUNG_HOST_GRENZNIEDERSCHRIFTEN = serviceProperties.getProperty(
+                    "VERMESSUNG_HOST_GRENZNIEDERSCHRIFTEN");
+        } catch (final Exception ex) {
             log.fatal("AlkisCommons Error!", ex);
             throw new RuntimeException(ex);
         }
