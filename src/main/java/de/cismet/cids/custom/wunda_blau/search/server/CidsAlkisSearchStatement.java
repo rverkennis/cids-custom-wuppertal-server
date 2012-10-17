@@ -236,7 +236,7 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
             }
             if (geom != null) {
                 final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geom);
-                query += " and intersects(geo_field,GeometryFromText('"
+                query += " and intersects(st_buffer(geo_field, 0.00000001),GeometryFromText('"
                             + geostring
                             + "'))";
             }

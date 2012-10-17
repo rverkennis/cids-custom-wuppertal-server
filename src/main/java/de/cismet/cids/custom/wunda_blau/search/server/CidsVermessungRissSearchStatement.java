@@ -244,7 +244,7 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
 
             result.append(conjunction);
 
-            result.append("intersects(g.geo_field, GeometryFromText('");
+            result.append("intersects(st_buffer(g.geo_field, 0.00000001), GeometryFromText('");
             result.append(geometry);
             result.append("'))");
         }
