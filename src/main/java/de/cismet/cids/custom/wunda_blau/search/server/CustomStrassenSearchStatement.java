@@ -82,7 +82,7 @@ public class CustomStrassenSearchStatement extends CidsServerSearch {
             return aln;
         } catch (Exception e) {
             getLog().fatal("Problem", e);
-            return null;
+            throw new RuntimeException(e);
         }
     }
 }

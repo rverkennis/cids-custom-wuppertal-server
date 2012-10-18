@@ -64,44 +64,43 @@ public class CidsVermessungRissArtSearchStatement extends CidsServerSearch {
 
     @Override
     public Collection performServerSearch() {
-        
-        final Collection result = new LinkedList();
-
-        if (getLog().isDebugEnabled()) {
-            getLog().debug("Search for all geometry states started.");
-        }
-
-        final MetaService metaService = (MetaService)getActiveLoaclServers().get(DOMAIN);
-        if (metaService == null) {
-            getLog().error("Could not retrieve MetaService '" + DOMAIN + "'.");
-            return result;
-        }
-
-        final ArrayList<ArrayList> resultset;
         try {
+            final Collection result = new LinkedList();
+
+            if (getLog().isDebugEnabled()) {
+                getLog().debug("Search for all geometry states started.");
+            }
+
+            final MetaService metaService = (MetaService)getActiveLoaclServers().get(DOMAIN);
+            if (metaService == null) {
+                getLog().error("Could not retrieve MetaService '" + DOMAIN + "'.");
+                return result;
+            }
+
+            final ArrayList<ArrayList> resultset;
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Executing SQL statement '" + SQL + "'.");
             }
 
             resultset = metaService.performCustomSearch(SQL);
-        } catch (RemoteException ex) {
-            getLog().error("Error occurred while executing SQL statement '" + SQL + "'.", ex);
-            return result;
-        }
 
-        for (final ArrayList veraenderungsart : resultset) {
-            final int classID = (Integer)veraenderungsart.get(0);
-            final int objectID = (Integer)veraenderungsart.get(1);
+            for (final ArrayList veraenderungsart : resultset) {
+                final int classID = (Integer)veraenderungsart.get(0);
+                final int objectID = (Integer)veraenderungsart.get(1);
 
-            try {
-                result.add(metaService.getMetaObject(user, objectID, classID));
-            } catch (final Exception ex) {
-                getLog().warn("Couldn't get CidsBean for class '" + classID + "', object '" + objectID + "', user '"
-                            + user + "'.",
-                    ex);
+                try {
+                    result.add(metaService.getMetaObject(user, objectID, classID));
+                } catch (final Exception ex) {
+                    getLog().warn("Couldn't get CidsBean for class '" + classID + "', object '" + objectID + "', user '"
+                                + user + "'.",
+                        ex);
+                }
             }
-        }
 
-        return result;
+            return result;
+        } catch (final Exception e) {
+            getLog().error("Problem", e);
+            throw new RuntimeException(e);
+        }
     }
 }

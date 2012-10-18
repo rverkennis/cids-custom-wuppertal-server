@@ -150,8 +150,8 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
 
     @Override
     public Collection performServerSearch() {
-        final List<Node> result = new ArrayList<Node>();
         try {
+            final List<Node> result = new ArrayList<Node>();
             final SOAPAccessProvider accessProvider = new SOAPAccessProvider();
             final ALKISSearchServices searchService = accessProvider.getAlkisSearchService();
 
@@ -236,7 +236,7 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
             }
             if (geom != null) {
                 final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geom);
-                query += " and intersects(geo_field,GeometryFromText('"
+                query += " and intersects(st_buffer(geo_field, 0.00000001),GeometryFromText('"
                             + geostring
                             + "'))";
             }
@@ -257,10 +257,10 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
                     result.add(mon);
                 }
             }
+            return result;
         } catch (final Exception e) {
             getLog().error("Problem", e);
             throw new RuntimeException(e);
         }
-        return result;
     }
 }

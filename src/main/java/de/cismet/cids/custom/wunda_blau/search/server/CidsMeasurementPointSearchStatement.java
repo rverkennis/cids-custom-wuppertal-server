@@ -157,77 +157,79 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
 
     @Override
     public Collection performServerSearch() {
-        getLog().info("Starting search for points. Pointcode: '" + pointcode + "', pointtypes: '" + pointtypes
-                    + "', GST: '" + gst + "', geometry: '" + geometry + "'.");
+        try {
+            getLog().info("Starting search for points. Pointcode: '" + pointcode + "', pointtypes: '" + pointtypes
+                        + "', GST: '" + gst + "', geometry: '" + geometry + "'.");
 
-        final ArrayList result = new ArrayList();
+            final ArrayList result = new ArrayList();
 
-        if ((pointtypes == null) || pointtypes.isEmpty()) {
-            getLog().warn("There is no pointtype specified. Cancel search..");
-            return result;
-        }
-
-        final MetaService metaService = (MetaService)getActiveLoaclServers().get(DOMAIN);
-        if (metaService == null) {
-            getLog().error("Could not retrieve MetaService '" + DOMAIN + "'.");
-            return result;
-        }
-
-        final StringBuilder sqlBuilder = new StringBuilder();
-        String sqlOrderBy = "";
-
-        if (pointtypes.contains(Pointtype.AUFNAHMEPUNKTE)
-                    || pointtypes.contains(Pointtype.BESONDERE_BAUWERKSPUNKTE)
-                    || pointtypes.contains(Pointtype.BESONDERE_GEBAEUDEPUNKTE)
-                    || pointtypes.contains(Pointtype.BESONDERE_TOPOGRAPHISCHE_PUNKTE)
-                    || pointtypes.contains(Pointtype.GRENZPUNKTE)
-                    || pointtypes.contains(Pointtype.SONSTIGE_VERMESSUNGSPUNKTE)) {
-            final String sqlAlkis = SQL_ALKIS.replace("<fromClause>", generateFromClauseForAlkis())
-                        .replace("<whereClause>", generateWhereClauseForAlkis());
-            sqlBuilder.append(sqlAlkis);
-
-            sqlOrderBy = SQL_ORDERBY_ALKIS;
-        }
-
-        if (pointtypes.contains(Pointtype.NIVELLEMENT_PUNKTE)) {
-            if (sqlOrderBy.length() == 0) {
-                sqlOrderBy = SQL_ORDERBY_NIVELLEMENT;
-            } else {
-                sqlBuilder.append(" UNION ");
-                sqlOrderBy = SQL_ORDERBY_BOTH;
+            if ((pointtypes == null) || pointtypes.isEmpty()) {
+                getLog().warn("There is no pointtype specified. Cancel search..");
+                return result;
             }
 
-            final String sqlNivellement = SQL_NIVELLEMENT.replace("<fromClause>", generateFromClauseForNivellement())
-                        .replace("<whereClause>", generateWhereClauseForNivellement());
-            sqlBuilder.append(sqlNivellement);
-        }
+            final MetaService metaService = (MetaService)getActiveLoaclServers().get(DOMAIN);
+            if (metaService == null) {
+                getLog().error("Could not retrieve MetaService '" + DOMAIN + "'.");
+                return result;
+            }
 
-        if (sqlBuilder.length() > 0) {
-            sqlBuilder.append(sqlOrderBy);
-        }
+            final StringBuilder sqlBuilder = new StringBuilder();
+            String sqlOrderBy = "";
 
-        final ArrayList<ArrayList> resultset;
-        try {
+            if (pointtypes.contains(Pointtype.AUFNAHMEPUNKTE)
+                        || pointtypes.contains(Pointtype.BESONDERE_BAUWERKSPUNKTE)
+                        || pointtypes.contains(Pointtype.BESONDERE_GEBAEUDEPUNKTE)
+                        || pointtypes.contains(Pointtype.BESONDERE_TOPOGRAPHISCHE_PUNKTE)
+                        || pointtypes.contains(Pointtype.GRENZPUNKTE)
+                        || pointtypes.contains(Pointtype.SONSTIGE_VERMESSUNGSPUNKTE)) {
+                final String sqlAlkis = SQL_ALKIS.replace("<fromClause>", generateFromClauseForAlkis())
+                            .replace("<whereClause>", generateWhereClauseForAlkis());
+                sqlBuilder.append(sqlAlkis);
+
+                sqlOrderBy = SQL_ORDERBY_ALKIS;
+            }
+
+            if (pointtypes.contains(Pointtype.NIVELLEMENT_PUNKTE)) {
+                if (sqlOrderBy.length() == 0) {
+                    sqlOrderBy = SQL_ORDERBY_NIVELLEMENT;
+                } else {
+                    sqlBuilder.append(" UNION ");
+                    sqlOrderBy = SQL_ORDERBY_BOTH;
+                }
+
+                final String sqlNivellement = SQL_NIVELLEMENT.replace(
+                            "<fromClause>",
+                            generateFromClauseForNivellement())
+                            .replace("<whereClause>", generateWhereClauseForNivellement());
+                sqlBuilder.append(sqlNivellement);
+            }
+
+            if (sqlBuilder.length() > 0) {
+                sqlBuilder.append(sqlOrderBy);
+            }
+
+            final ArrayList<ArrayList> resultset;
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Executing SQL statement '" + sqlBuilder.toString() + "'.");
             }
             resultset = metaService.performCustomSearch(sqlBuilder.toString());
-        } catch (RemoteException ex) {
-            getLog().error("Error occurred while executing SQL statement '" + sqlBuilder.toString() + "'.", ex);
+
+            for (final ArrayList measurementPoint : resultset) {
+                final int classID = (Integer)measurementPoint.get(0);
+                final int objectID = (Integer)measurementPoint.get(1);
+                final String name = (String)measurementPoint.get(2);
+
+                final MetaObjectNode node = new MetaObjectNode(DOMAIN, objectID, classID, name);
+
+                result.add(node);
+            }
+
             return result;
+        } catch (final Exception e) {
+            getLog().error("Problem", e);
+            throw new RuntimeException(e);
         }
-
-        for (final ArrayList measurementPoint : resultset) {
-            final int classID = (Integer)measurementPoint.get(0);
-            final int objectID = (Integer)measurementPoint.get(1);
-            final String name = (String)measurementPoint.get(2);
-
-            final MetaObjectNode node = new MetaObjectNode(DOMAIN, objectID, classID, name);
-
-            result.add(node);
-        }
-
-        return result;
     }
 
     /**
@@ -314,7 +316,7 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
 
             whereClauseBuilder.append(conjunction);
 
-            whereClauseBuilder.append("intersects(g.geo_field, GeometryFromText('");
+            whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.00000001), GeometryFromText('");
             whereClauseBuilder.append(geometry);
             whereClauseBuilder.append("'))");
         }
@@ -374,7 +376,7 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
 
             whereClauseBuilder.append(conjunction);
 
-            whereClauseBuilder.append("intersects(g.geo_field, GeometryFromText('");
+            whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.00000001), GeometryFromText('");
             whereClauseBuilder.append(geometry);
             whereClauseBuilder.append("'))");
         }

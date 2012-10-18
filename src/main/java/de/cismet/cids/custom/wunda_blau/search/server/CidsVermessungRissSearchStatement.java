@@ -98,53 +98,53 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
 
     @Override
     public Collection performServerSearch() {
-        final ArrayList result = new ArrayList();
-
-        if (((schluessel == null) || (schluessel.trim().length() <= 0))
-                    && (gemarkung == null)
-                    && ((flur == null) || (flur.trim().length() <= 0))
-                    && ((blatt == null) || (blatt.trim().length() <= 0))
-                    && ((schluesselCollection == null) || schluesselCollection.isEmpty())
-                    && (geometry == null)
-                    && ((flurstuecke == null) || flurstuecke.isEmpty())) {
-            LOG.warn("No filters provided. Cancel search.");
-            return result;
-        }
-
-        final StringBuilder sqlBuilder = new StringBuilder();
-
-        final MetaService metaService = (MetaService)getActiveLoaclServers().get(DOMAIN);
-        if (metaService == null) {
-            getLog().error("Could not retrieve MetaService '" + DOMAIN + "'.");
-            return result;
-        }
-
-        sqlBuilder.append(SQL.replace("<fromClause>", generateFromClause()).replace(
-                "<whereClause>",
-                generateWhereClause()));
-
-        final ArrayList<ArrayList> resultset;
         try {
+            final ArrayList result = new ArrayList();
+
+            if (((schluessel == null) || (schluessel.trim().length() <= 0))
+                        && (gemarkung == null)
+                        && ((flur == null) || (flur.trim().length() <= 0))
+                        && ((blatt == null) || (blatt.trim().length() <= 0))
+                        && ((schluesselCollection == null) || schluesselCollection.isEmpty())
+                        && (geometry == null)
+                        && ((flurstuecke == null) || flurstuecke.isEmpty())) {
+                LOG.warn("No filters provided. Cancel search.");
+                return result;
+            }
+
+            final StringBuilder sqlBuilder = new StringBuilder();
+
+            final MetaService metaService = (MetaService)getActiveLoaclServers().get(DOMAIN);
+            if (metaService == null) {
+                getLog().error("Could not retrieve MetaService '" + DOMAIN + "'.");
+                return result;
+            }
+
+            sqlBuilder.append(SQL.replace("<fromClause>", generateFromClause()).replace(
+                    "<whereClause>",
+                    generateWhereClause()));
+
+            final ArrayList<ArrayList> resultset;
             if (getLog().isDebugEnabled()) {
                 getLog().debug("Executing SQL statement '" + sqlBuilder.toString() + "'.");
             }
             resultset = metaService.performCustomSearch(sqlBuilder.toString());
-        } catch (RemoteException ex) {
-            getLog().error("Error occurred while executing SQL statement '" + sqlBuilder.toString() + "'.", ex);
+
+            for (final ArrayList measurementPoint : resultset) {
+                final int classID = (Integer)measurementPoint.get(0);
+                final int objectID = (Integer)measurementPoint.get(1);
+                final String name = (String)measurementPoint.get(2);
+
+                final MetaObjectNode node = new MetaObjectNode(DOMAIN, objectID, classID, name);
+
+                result.add(node);
+            }
+
             return result;
+        } catch (final Exception e) {
+            getLog().error("Problem", e);
+            throw new RuntimeException(e);
         }
-
-        for (final ArrayList measurementPoint : resultset) {
-            final int classID = (Integer)measurementPoint.get(0);
-            final int objectID = (Integer)measurementPoint.get(1);
-            final String name = (String)measurementPoint.get(2);
-
-            final MetaObjectNode node = new MetaObjectNode(DOMAIN, objectID, classID, name);
-
-            result.add(node);
-        }
-
-        return result;
     }
 
     /**
@@ -244,7 +244,7 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
 
             result.append(conjunction);
 
-            result.append("intersects(g.geo_field, GeometryFromText('");
+            result.append("intersects(st_buffer(g.geo_field, 0.00000001), GeometryFromText('");
             result.append(geometry);
             result.append("'))");
         }
