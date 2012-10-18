@@ -60,9 +60,6 @@ public class ServerAlkisSoapAction implements ServerAction {
     public Object execute(final Object body, final ServerActionParameter... params) {
         LOG.fatal("ALKIS SOAP CSA");
 
-//        final SOAPAccessProvider soapProvider = new SOAPAccessProvider();
-//        final ALKISInfoServices infoService = soapProvider.getAlkisInfoService();
-
         if (!(body instanceof RETURN_VALUE)) {
             throw new IllegalArgumentException("Body has to be either POINT or BUCHUNGSBLATT");
         }
