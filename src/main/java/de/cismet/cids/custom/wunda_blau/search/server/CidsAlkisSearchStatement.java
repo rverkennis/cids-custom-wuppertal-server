@@ -150,8 +150,8 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
 
     @Override
     public Collection performServerSearch() {
-        final List<Node> result = new ArrayList<Node>();
         try {
+            final List<Node> result = new ArrayList<Node>();
             final SOAPAccessProvider accessProvider = new SOAPAccessProvider();
             final ALKISSearchServices searchService = accessProvider.getAlkisSearchService();
 
@@ -257,10 +257,10 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
                     result.add(mon);
                 }
             }
+            return result;
         } catch (final Exception e) {
             getLog().error("Problem", e);
             throw new RuntimeException(e);
         }
-        return result;
     }
 }
