@@ -58,8 +58,6 @@ public class ServerAlkisSoapAction implements ServerAction {
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
-        LOG.fatal("ALKIS SOAP CSA");
-
         if (!(body instanceof RETURN_VALUE)) {
             throw new IllegalArgumentException("Body has to be either POINT or BUCHUNGSBLATT");
         }
