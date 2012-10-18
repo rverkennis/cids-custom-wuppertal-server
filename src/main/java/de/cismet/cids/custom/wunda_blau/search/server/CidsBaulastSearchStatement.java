@@ -140,8 +140,9 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
 
         if (bounds != null) {
             geoquerypart = " and g.geo_field && GeometryFromText('" + bounds
-                        + "',25832) and intersects(st_buffer(g.geo_field, 0.00000001),GeometryFromText('" + bounds
-                        + "',25832))";
+                        + "',25832) and intersects(st_buffer(g.geo_field, 0.0000001),st_buffer(GeometryFromText('"
+                        + bounds
+                        + "',25832), 0.0000001))";
         }
 
         if ((art != null) && (art.length() > 0)) {
@@ -376,9 +377,9 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                     + "\n               WHERE  k.fs_referenz = f.id "
                     + "\n                      AND f.umschreibendes_rechteck = g.id "
                     + "\n                      AND y.geo_field && g.geo_field "
-                    + "\n                      AND Intersects(st_buffer(y.geo_field, 0.00000001), st_buffer(g.geo_field, 0.00000001)) "
+                    + "\n                      AND Intersects(st_buffer(y.geo_field, 0.0000001), st_buffer(g.geo_field, 0.0000001)) "
                     + "\n                      AND NOT y.fid = f.id "
-                    + "\n                      AND Intersects(Buffer(y.geo_field, -0.05), st_buffer(g.geo_field, 0.00000001))"
+                    + "\n                      AND Intersects(Buffer(y.geo_field, -0.05), st_buffer(g.geo_field, 0.0000001))"
                     + "\n                      " + geoquerypart
                     + "\n                ) "
                     + "\n              AS indirekt "

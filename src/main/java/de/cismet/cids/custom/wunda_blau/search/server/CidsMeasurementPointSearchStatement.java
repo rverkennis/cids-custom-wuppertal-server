@@ -316,9 +316,9 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
 
             whereClauseBuilder.append(conjunction);
 
-            whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.00000001), GeometryFromText('");
+            whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.0000001), st_buffer(GeometryFromText('");
             whereClauseBuilder.append(geometry);
-            whereClauseBuilder.append("'))");
+            whereClauseBuilder.append("'), 0.0000001))");
         }
         return whereClauseBuilder.toString();
     }
@@ -370,15 +370,13 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
 
             whereClauseBuilder.append(conjunction);
 
-            whereClauseBuilder.append("g.geo_field && GeometryFromText('");
-            whereClauseBuilder.append(geometry);
-            whereClauseBuilder.append("')");
+            whereClauseBuilder.append("g.geo_field && GeometryFromText('").append(geometry).append("')");
 
             whereClauseBuilder.append(conjunction);
 
-            whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.00000001), GeometryFromText('");
-            whereClauseBuilder.append(geometry);
-            whereClauseBuilder.append("'))");
+            whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.0000001), st_buffer(GeometryFromText('")
+                    .append(geometry)
+                    .append("'), 0.0000001))");
         }
 
         return whereClauseBuilder.toString();
