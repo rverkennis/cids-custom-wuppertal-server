@@ -13,6 +13,8 @@ import Sirius.server.middleware.types.Node;
 import Sirius.server.search.CidsServerSearch;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
 
 import de.aedsicad.aaaweb.service.alkis.search.ALKISSearchServices;
 
@@ -88,7 +90,7 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
     private String flurstuecksnummer = null;
     private String buchungsblattnummer = null;
     private SucheUeber ueber = null;
-    private Geometry geom = null;
+    private Geometry geometry = null;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -98,12 +100,12 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
      * @param  resulttyp                               DOCUMENT ME!
      * @param  ueber                                   DOCUMENT ME!
      * @param  flurstuecksnummerOrBuchungsblattnummer  DOCUMENT ME!
-     * @param  g                                       DOCUMENT ME!
+     * @param  geometry                                DOCUMENT ME!
      */
     public CidsAlkisSearchStatement(final Resulttyp resulttyp,
             final SucheUeber ueber,
             final String flurstuecksnummerOrBuchungsblattnummer,
-            final Geometry g) {
+            final Geometry geometry) {
         this.resulttyp = resulttyp;
         this.ueber = ueber;
         if (ueber == SucheUeber.FLURSTUECKSNUMMER) {
@@ -111,7 +113,7 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
         } else if (ueber == SucheUeber.BUCHUNGSBLATTNUMMER) {
             buchungsblattnummer = flurstuecksnummerOrBuchungsblattnummer;
         }
-        geom = g;
+        this.geometry = geometry;
     }
 
     /**
@@ -143,7 +145,7 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
         lengthTest = geburtstag;
         this.geburtstag = (lengthTest.length() > 0) ? lengthTest : null;
         this.ptyp = ptyp;
-        geom = g;
+        geometry = g;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -234,14 +236,22 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
                     break;
                 }
             }
-            if (geom != null) {
-                final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geom);
-                query += " and intersects("
-                            + "st_buffer(geo_field, 0.0000001),"
-                            + "st_buffer(GeometryFromText('"
-                            + geostring
-                            + "'), 0.0000001)"
-                            + ")";
+            if (geometry != null) {
+                final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geometry);
+                if ((geometry instanceof Polygon) || (geometry instanceof MultiPolygon)) { // with buffer for geostring
+                    query += " and intersects("
+                                + "st_buffer(geo_field, 0.000001),"
+                                + "st_buffer(GeometryFromText('"
+                                + geostring
+                                + "'), 0.000001))";
+                } else {                                                                   // without buffer for
+                                                                                           // geostring
+                    query += " and intersects("
+                                + "st_buffer(geo_field, 0.000001),"
+                                + "GeometryFromText('"
+                                + geostring
+                                + "'))";
+                }
             }
 
             if (getLog().isInfoEnabled()) {
