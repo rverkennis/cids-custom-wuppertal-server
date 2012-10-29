@@ -11,12 +11,17 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.search.CidsServerSearch;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
+
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+
+import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
 //select distinct 666 as class_id, l.id, l.blattnummer, l.laufende_nummer as object_id from alb_baulast l
 //, alb_baulast_baulastarten la, alb_baulast_art a
@@ -71,7 +76,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
     private boolean belastet;
     private boolean beguenstigt;
     //
-    private String bounds;
+    private Geometry geometry;
     //
     private List<FlurstueckInfo> flurstuecke;
     //
@@ -112,10 +117,7 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
         if (art != null) {
             art = StringEscapeUtils.escapeSql(art);
         }
-        this.bounds = searchInfo.getBounds();
-        if (bounds != null) {
-            bounds = StringEscapeUtils.escapeSql(bounds);
-        }
+        this.geometry = searchInfo.getGeometry();
         this.flurstuecke = searchInfo.getFlurstuecke();
 
         if ((blattnummer != null) && (blattnummer.length() > 0)) {
@@ -138,11 +140,18 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
             }
         }
 
-        if (bounds != null) {
-            geoquerypart = " and g.geo_field && GeometryFromText('" + bounds
-                        + "',25832) and intersects(st_buffer(g.geo_field, 0.0000001),st_buffer(GeometryFromText('"
-                        + bounds
-                        + "',25832), 0.0000001))";
+        if ((geometry != null) && !geometry.isEmpty()) {
+            final String geomString = PostGisGeometryFactory.getPostGisCompliantDbString(geometry);
+            if ((geometry instanceof Polygon) || (geometry instanceof MultiPolygon)) { // with buffer for geostring
+                geoquerypart = " and g.geo_field && GeometryFromText('" + geomString
+                            + "',25832) and intersects(st_buffer(g.geo_field, 0.000001),st_buffer(GeometryFromText('"
+                            + geomString
+                            + "',25832), 0.000001))";
+            } else {
+                geoquerypart = " and g.geo_field && GeometryFromText('" + geomString
+                            + "',25832) and intersects(st_buffer(g.geo_field, 0.000001),GeometryFromText('" + geomString
+                            + "',25832))";
+            }
         }
 
         if ((art != null) && (art.length() > 0)) {
@@ -377,9 +386,9 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                     + "\n               WHERE  k.fs_referenz = f.id "
                     + "\n                      AND f.umschreibendes_rechteck = g.id "
                     + "\n                      AND y.geo_field && g.geo_field "
-                    + "\n                      AND Intersects(st_buffer(y.geo_field, 0.0000001), st_buffer(g.geo_field, 0.0000001)) "
+                    + "\n                      AND Intersects(st_buffer(y.geo_field, 0.000001), st_buffer(g.geo_field, 0.000001)) "
                     + "\n                      AND NOT y.fid = f.id "
-                    + "\n                      AND Intersects(Buffer(y.geo_field, -0.05), st_buffer(g.geo_field, 0.0000001))"
+                    + "\n                      AND Intersects(Buffer(y.geo_field, -0.05), st_buffer(g.geo_field, 0.000001))"
                     + "\n                      " + geoquerypart
                     + "\n                ) "
                     + "\n              AS indirekt "

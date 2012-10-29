@@ -7,6 +7,8 @@
 ****************************************************/
 package de.cismet.cids.custom.wunda_blau.search.server;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +36,7 @@ public class BaulastSearchInfo {
     private boolean belastet;
     private boolean beguenstigt;
     //
-    private String bounds;
+    private Geometry geometry;
     //
     private String art;
 
@@ -184,8 +186,8 @@ public class BaulastSearchInfo {
      *
      * @return  the bounds
      */
-    public String getBounds() {
-        return bounds;
+    public Geometry getGeometry() {
+        return geometry;
     }
 
     /**
@@ -193,8 +195,8 @@ public class BaulastSearchInfo {
      *
      * @param  bounds  the bounds to set
      */
-    public void setBounds(final String bounds) {
-        this.bounds = bounds;
+    public void setGeometry(final Geometry bounds) {
+        this.geometry = bounds;
     }
 
     /**

@@ -11,13 +11,17 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.search.CidsServerSearch;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
 
-import java.rmi.RemoteException;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
+import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
 /**
  * DOCUMENT ME!
@@ -131,7 +135,7 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
     private final String pointcode;
     private Collection<Pointtype> pointtypes;
     private GST gst;
-    private String geometry;
+    private Geometry geometry;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -146,7 +150,7 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
     public CidsMeasurementPointSearchStatement(final String pointcode,
             final Collection<Pointtype> pointtypes,
             final GST gst,
-            final String geometry) {
+            final Geometry geometry) {
         this.pointcode = StringEscapeUtils.escapeSql(pointcode);
         this.pointtypes = pointtypes;
         this.gst = gst;
@@ -159,7 +163,7 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
     public Collection performServerSearch() {
         try {
             getLog().info("Starting search for points. Pointcode: '" + pointcode + "', pointtypes: '" + pointtypes
-                        + "', GST: '" + gst + "', geometry: '" + geometry + "'.");
+                        + "', GST: '" + gst + "', geometry: '" + geometry.toString() + "'.");
 
             final ArrayList result = new ArrayList();
 
@@ -303,6 +307,8 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
             conjunction = " AND ";
         }
         if (geometry != null) {
+            final String geomString = PostGisGeometryFactory.getPostGisCompliantDbString(geometry);
+
             whereClauseBuilder.append(conjunction);
             conjunction = " AND ";
 
@@ -310,15 +316,19 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
 
             whereClauseBuilder.append(conjunction);
 
-            whereClauseBuilder.append("g.geo_field && GeometryFromText('");
-            whereClauseBuilder.append(geometry);
-            whereClauseBuilder.append("')");
+            whereClauseBuilder.append("g.geo_field && GeometryFromText('").append(geomString).append("')");
 
             whereClauseBuilder.append(conjunction);
 
-            whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.0000001), st_buffer(GeometryFromText('");
-            whereClauseBuilder.append(geometry);
-            whereClauseBuilder.append("'), 0.0000001))");
+            if ((geometry instanceof Polygon) || (geometry instanceof MultiPolygon)) { // with buffer for geostring
+                whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.000001), st_buffer(GeometryFromText('")
+                        .append(geomString)
+                        .append("'), 0.000001))");
+            } else {
+                whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.000001), GeometryFromText('")
+                        .append(geomString)
+                        .append("'))");
+            }
         }
         return whereClauseBuilder.toString();
     }
@@ -363,6 +373,8 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
         }
 
         if (geometry != null) {
+            final String geomString = PostGisGeometryFactory.getPostGisCompliantDbString(geometry);
+
             whereClauseBuilder.append(conjunction);
             conjunction = " AND ";
 
@@ -370,13 +382,19 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
 
             whereClauseBuilder.append(conjunction);
 
-            whereClauseBuilder.append("g.geo_field && GeometryFromText('").append(geometry).append("')");
+            whereClauseBuilder.append("g.geo_field && GeometryFromText('").append(geomString).append("')");
 
             whereClauseBuilder.append(conjunction);
 
-            whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.0000001), st_buffer(GeometryFromText('")
-                    .append(geometry)
-                    .append("'), 0.0000001))");
+            if ((geometry instanceof Polygon) || (geometry instanceof MultiPolygon)) { // with buffer for geostring
+                whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.000001), st_buffer(GeometryFromText('")
+                        .append(geomString)
+                        .append("'), 0.000001))");
+            } else {
+                whereClauseBuilder.append("intersects(st_buffer(g.geo_field, 0.000001), GeometryFromText('")
+                        .append(geomString)
+                        .append("'))");
+            }
         }
 
         return whereClauseBuilder.toString();

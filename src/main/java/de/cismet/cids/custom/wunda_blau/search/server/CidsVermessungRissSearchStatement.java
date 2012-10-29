@@ -11,14 +11,18 @@ import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.search.CidsServerSearch;
 
-import org.apache.log4j.Logger;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
 
-import java.rmi.RemoteException;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+
+import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
 /**
  * DOCUMENT ME!
@@ -62,7 +66,7 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
     private String flur;
     private String blatt;
     private Collection<String> schluesselCollection;
-    private String geometry;
+    private Geometry geometry;
     private Collection<Map<String, String>> flurstuecke;
 
     //~ Constructors -----------------------------------------------------------
@@ -83,7 +87,7 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
             final String flur,
             final String blatt,
             final Collection<String> schluesselCollection,
-            final String geometry,
+            final Geometry geometry,
             final Collection<Map<String, String>> flurstuecke) {
         this.schluessel = schluessel;
         this.gemarkung = gemarkung;
@@ -155,7 +159,7 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
     private String generateFromClause() {
         final StringBuilder result = new StringBuilder(FROM);
 
-        if ((geometry != null) && (geometry.trim().length() > 0)) {
+        if ((geometry != null) && !geometry.isEmpty()) {
             result.append(JOIN_GEOM);
         }
 
@@ -235,18 +239,24 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
         }
 
         if (geometry != null) {
+            final String geomString = PostGisGeometryFactory.getPostGisCompliantDbString(geometry);
+
             result.append(conjunction);
             conjunction = " AND ";
 
-            result.append("g.geo_field && GeometryFromText('");
-            result.append(geometry);
-            result.append("')");
+            result.append("g.geo_field && GeometryFromText('").append(geomString).append("')");
 
             result.append(conjunction);
 
-            result.append("intersects(st_buffer(g.geo_field, 0.0000001), st_buffer(GeometryFromText('")
-                    .append(geometry)
-                    .append("'), 0.0000001))");
+            if ((geometry instanceof Polygon) || (geometry instanceof MultiPolygon)) { // with buffer for searchGeometry
+                result.append("intersects(st_buffer(g.geo_field, 0.000001), st_buffer(GeometryFromText('")
+                        .append(geomString)
+                        .append("'), 0.000001))");
+            } else {
+                result.append("intersects(st_buffer(g.geo_field, 0.000001), GeometryFromText('")
+                        .append(geomString)
+                        .append("'))");
+            }
         }
 
         if ((flurstuecke != null) && !flurstuecke.isEmpty()) {
