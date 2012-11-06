@@ -5,24 +5,18 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.cismet.cids.custom.wunda_blau.search.server;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
-import Sirius.server.middleware.types.MetaObjectNode;
 import Sirius.server.newuser.User;
-import Sirius.server.search.CidsServerSearch;
 
-import org.openide.util.Exceptions;
-
-import java.rmi.RemoteException;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+
+import de.cismet.cids.server.search.AbstractCidsServerSearch;
 
 /**
  * DOCUMENT ME!
@@ -30,9 +24,12 @@ import java.util.LinkedList;
  * @author   jweintraut
  * @version  $Revision$, $Date$
  */
-public class CidsVermessungRissArtSearchStatement extends CidsServerSearch {
+public class CidsVermessungRissArtSearchStatement extends AbstractCidsServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
+
+    /** LOGGER. */
+    private static final transient Logger LOG = Logger.getLogger(CidsVermessungRissArtSearchStatement.class);
 
     private static final String DOMAIN = "WUNDA_BLAU";
     private static final String CIDSCLASS = "vermessung_art";
@@ -67,19 +64,19 @@ public class CidsVermessungRissArtSearchStatement extends CidsServerSearch {
         try {
             final Collection result = new LinkedList();
 
-            if (getLog().isDebugEnabled()) {
-                getLog().debug("Search for all geometry states started.");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Search for all geometry states started.");
             }
 
-            final MetaService metaService = (MetaService)getActiveLoaclServers().get(DOMAIN);
+            final MetaService metaService = (MetaService)getActiveLocalServers().get(DOMAIN);
             if (metaService == null) {
-                getLog().error("Could not retrieve MetaService '" + DOMAIN + "'.");
+                LOG.error("Could not retrieve MetaService '" + DOMAIN + "'.");
                 return result;
             }
 
             final ArrayList<ArrayList> resultset;
-            if (getLog().isDebugEnabled()) {
-                getLog().debug("Executing SQL statement '" + SQL + "'.");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Executing SQL statement '" + SQL + "'.");
             }
 
             resultset = metaService.performCustomSearch(SQL);
@@ -91,7 +88,7 @@ public class CidsVermessungRissArtSearchStatement extends CidsServerSearch {
                 try {
                     result.add(metaService.getMetaObject(user, objectID, classID));
                 } catch (final Exception ex) {
-                    getLog().warn("Couldn't get CidsBean for class '" + classID + "', object '" + objectID + "', user '"
+                    LOG.warn("Couldn't get CidsBean for class '" + classID + "', object '" + objectID + "', user '"
                                 + user + "'.",
                         ex);
                 }
@@ -99,7 +96,7 @@ public class CidsVermessungRissArtSearchStatement extends CidsServerSearch {
 
             return result;
         } catch (final Exception e) {
-            getLog().error("Problem", e);
+            LOG.error("Problem", e);
             throw new RuntimeException(e);
         }
     }

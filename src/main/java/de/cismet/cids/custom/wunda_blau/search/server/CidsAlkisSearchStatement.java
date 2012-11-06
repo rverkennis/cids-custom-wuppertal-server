@@ -9,8 +9,6 @@ package de.cismet.cids.custom.wunda_blau.search.server;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
-import Sirius.server.middleware.types.Node;
-import Sirius.server.search.CidsServerSearch;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -19,12 +17,16 @@ import com.vividsolutions.jts.geom.Polygon;
 import de.aedsicad.aaaweb.service.alkis.search.ALKISSearchServices;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import de.cismet.cids.custom.utils.alkis.SOAPAccessProvider;
+
+import de.cismet.cids.server.search.AbstractCidsServerSearch;
+import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 
 import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
@@ -34,9 +36,12 @@ import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
  * @author   stefan
  * @version  $Revision$, $Date$
  */
-public class CidsAlkisSearchStatement extends CidsServerSearch {
+public class CidsAlkisSearchStatement extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
+
+    /** LOGGER. */
+    private static final transient Logger LOG = Logger.getLogger(CidsAlkisSearchStatement.class);
 
     public static String WILDCARD = "%";
     private static final int TIMEOUT = 100000;
@@ -151,9 +156,9 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Collection performServerSearch() {
+    public Collection<MetaObjectNode> performServerSearch() {
         try {
-            final List<Node> result = new ArrayList<Node>();
+            final List<MetaObjectNode> result = new ArrayList<MetaObjectNode>();
             final SOAPAccessProvider accessProvider = new SOAPAccessProvider();
             final ALKISSearchServices searchService = accessProvider.getAlkisSearchService();
 
@@ -254,12 +259,12 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
                 }
             }
 
-            if (getLog().isInfoEnabled()) {
-                getLog().info("Search:\n" + query);
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Search:\n" + query);
             }
 
             if (query != null) {
-                final MetaService ms = (MetaService)getActiveLoaclServers().get("WUNDA_BLAU");
+                final MetaService ms = (MetaService)getActiveLocalServers().get("WUNDA_BLAU");
 
                 final List<ArrayList> resultList = ms.performCustomSearch(query);
                 for (final ArrayList al : resultList) {
@@ -272,7 +277,7 @@ public class CidsAlkisSearchStatement extends CidsServerSearch {
             }
             return result;
         } catch (final Exception e) {
-            getLog().error("Problem", e);
+            LOG.error("Problem", e);
             throw new RuntimeException(e);
         }
     }

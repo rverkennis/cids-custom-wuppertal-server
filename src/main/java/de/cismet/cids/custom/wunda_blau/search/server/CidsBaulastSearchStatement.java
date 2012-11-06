@@ -9,45 +9,35 @@ package de.cismet.cids.custom.wunda_blau.search.server;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
-import Sirius.server.search.CidsServerSearch;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.cismet.cids.server.search.AbstractCidsServerSearch;
+import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
+
 import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
-//select distinct 666 as class_id, l.id, l.blattnummer, l.laufende_nummer as object_id from alb_baulast l
-//, alb_baulast_baulastarten la, alb_baulast_art a
-//, (
-//select * from alb_baulast_flurstuecke_beguenstigt
-//UNION
-//select * from alb_baulast_flurstuecke_belastet) as fsj
-//, alb_flurstueck_kicker k, flurstueck f
-//, geom g
-//where
-//l.blattnummer ~ '^[0]*1234$'
-//and loeschungsdatum is null
-//and loeschungsdatum is not null
-//and (
-//l.id = fsj.baulast_reference and fsj.flurstueck = k.id
-//and k.fs_referenz = f.id and f.umschreibendes_rechteck = g.id and g.geo_field && GeometryFromText('') and intersects(g.geo_field,GeometryFromText(''))
-//and k.gemarkung = '123' and k.flur = '123' and k.zaehler = '123' and k.nenner = '123')
-//and l.id = la.baulast_reference and la.baulast_art = a.id and a.baulast_art in ('art1', 'art2')
-//order by blattnummer, laufende_nummer
 /**
  * DOCUMENT ME!
  *
  * @author   stefan
  * @version  $Revision$, $Date$
  */
-public class CidsBaulastSearchStatement extends CidsServerSearch {
+public class CidsBaulastSearchStatement extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** LOGGER. */
+    private static final transient Logger LOG = Logger.getLogger(CidsBaulastSearchStatement.class);
 
     //~ Enums ------------------------------------------------------------------
 
@@ -165,20 +155,18 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Collection performServerSearch() {
+    public Collection<MetaObjectNode> performServerSearch() {
         try {
             final String primary = getPrimaryQuery();
             final String secondary = getSecondaryQuery();
-            final MetaService ms = (MetaService)getActiveLoaclServers().get("WUNDA_BLAU");
+            final MetaService ms = (MetaService)getActiveLocalServers().get("WUNDA_BLAU");
             final List<ArrayList> primaryResultList = ms.performCustomSearch(primary);
 
             final List<MetaObjectNode> aln = new ArrayList<MetaObjectNode>();
             for (final ArrayList al : primaryResultList) {
                 final int cid = (Integer)al.get(0);
                 final int oid = (Integer)al.get(1);
-//                final String name = "<html><p><!--sorter:000 -->" + (String)al.get(2) + "</p></html>";
                 final MetaObjectNode mon = new MetaObjectNode("WUNDA_BLAU", oid, cid, (String)al.get(2));
-//                mon.setIconString("/res/16/bewoelkt.png");
                 aln.add(mon);
             }
 
@@ -187,21 +175,18 @@ public class CidsBaulastSearchStatement extends CidsServerSearch {
                 for (final ArrayList al : secondaryResultList) {
                     final int cid = (Integer)al.get(0);
                     final int oid = (Integer)al.get(1);
-//                    final String name = "<html><p><!--sorter:001 -->" + (String)al.get(2) + " (indirekt)"
-//                                + "</p></html>";
                     final MetaObjectNode mon = new MetaObjectNode(
                             "WUNDA_BLAU",
                             oid,
                             cid,
                             "indirekt: "
                                     + (String)al.get(2));
-//                    mon.setIconString("/res/16/bewoelkt.png");
                     aln.add(mon);
                 }
             }
             return aln;
         } catch (Exception e) {
-            getLog().error("Problem der Baulastensuche", e);
+            LOG.error("Problem der Baulastensuche", e);
             throw new RuntimeException("Problem der Baulastensuche", e);
         }
     }
