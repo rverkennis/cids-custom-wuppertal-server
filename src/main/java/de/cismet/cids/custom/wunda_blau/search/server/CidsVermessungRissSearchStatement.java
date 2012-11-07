@@ -9,7 +9,6 @@ package de.cismet.cids.custom.wunda_blau.search.server;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
-import Sirius.server.search.CidsServerSearch;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -22,6 +21,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import de.cismet.cids.server.search.AbstractCidsServerSearch;
+import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
+
 import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
 /**
@@ -30,7 +32,7 @@ import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
  * @author   jweintraut
  * @version  $Revision$, $Date$
  */
-public class CidsVermessungRissSearchStatement extends CidsServerSearch {
+public class CidsVermessungRissSearchStatement extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -101,7 +103,7 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Collection performServerSearch() {
+    public Collection<MetaObjectNode> performServerSearch() {
         try {
             final ArrayList result = new ArrayList();
 
@@ -118,9 +120,9 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
 
             final StringBuilder sqlBuilder = new StringBuilder();
 
-            final MetaService metaService = (MetaService)getActiveLoaclServers().get(DOMAIN);
+            final MetaService metaService = (MetaService)getActiveLocalServers().get(DOMAIN);
             if (metaService == null) {
-                getLog().error("Could not retrieve MetaService '" + DOMAIN + "'.");
+                LOG.error("Could not retrieve MetaService '" + DOMAIN + "'.");
                 return result;
             }
 
@@ -129,8 +131,8 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
                     generateWhereClause()));
 
             final ArrayList<ArrayList> resultset;
-            if (getLog().isDebugEnabled()) {
-                getLog().debug("Executing SQL statement '" + sqlBuilder.toString() + "'.");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Executing SQL statement '" + sqlBuilder.toString() + "'.");
             }
             resultset = metaService.performCustomSearch(sqlBuilder.toString());
 
@@ -146,7 +148,7 @@ public class CidsVermessungRissSearchStatement extends CidsServerSearch {
 
             return result;
         } catch (final Exception e) {
-            getLog().error("Problem", e);
+            LOG.error("Problem", e);
             throw new RuntimeException(e);
         }
     }

@@ -5,32 +5,19 @@
 *              ... and it just works.
 *
 ****************************************************/
-/*
- *  Copyright (C) 2010 thorsten
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 package de.cismet.cids.custom.wunda_blau.search.server;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaClass;
 import Sirius.server.middleware.types.MetaObjectNode;
-import Sirius.server.middleware.types.Node;
-import Sirius.server.search.CidsServerSearch;
+
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import de.cismet.cids.server.search.AbstractCidsServerSearch;
+import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 
 /**
  * DOCUMENT ME!
@@ -38,7 +25,12 @@ import java.util.Collection;
  * @author   thorsten
  * @version  $Revision$, $Date$
  */
-public class CustomStrassenSearchStatement extends CidsServerSearch {
+public class CustomStrassenSearchStatement extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
+
+    //~ Static fields/initializers ---------------------------------------------
+
+    /** LOGGER. */
+    private static final transient Logger LOG = Logger.getLogger(CustomStrassenSearchStatement.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -58,11 +50,11 @@ public class CustomStrassenSearchStatement extends CidsServerSearch {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Collection performServerSearch() {
+    public Collection<MetaObjectNode> performServerSearch() {
         try {
-            getLog().fatal("search started");
+            LOG.fatal("search started");
 
-            final MetaService ms = (MetaService)getActiveLoaclServers().get("WUNDA_BLAU");
+            final MetaService ms = (MetaService)getActiveLocalServers().get("WUNDA_BLAU");
 
             final MetaClass c = ms.getClassByTableName(getUser(), "strasse");
 
@@ -71,7 +63,7 @@ public class CustomStrassenSearchStatement extends CidsServerSearch {
 
             final ArrayList<ArrayList> result = ms.performCustomSearch(sql);
 
-            final ArrayList<Node> aln = new ArrayList<Node>();
+            final ArrayList<MetaObjectNode> aln = new ArrayList<MetaObjectNode>();
             for (final ArrayList al : result) {
                 final int id = (Integer)al.get(0);
                 final MetaObjectNode mon = new MetaObjectNode(c.getDomain(), id, c.getId());
@@ -81,7 +73,7 @@ public class CustomStrassenSearchStatement extends CidsServerSearch {
             // Thread.sleep(5000);
             return aln;
         } catch (Exception e) {
-            getLog().fatal("Problem", e);
+            LOG.fatal("Problem", e);
             throw new RuntimeException(e);
         }
     }
