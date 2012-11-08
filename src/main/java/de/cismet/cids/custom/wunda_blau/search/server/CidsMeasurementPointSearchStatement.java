@@ -9,17 +9,20 @@ package de.cismet.cids.custom.wunda_blau.search.server;
 
 import Sirius.server.middleware.interfaces.domainserver.MetaService;
 import Sirius.server.middleware.types.MetaObjectNode;
-import Sirius.server.search.CidsServerSearch;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
+import de.cismet.cids.server.search.AbstractCidsServerSearch;
+import de.cismet.cids.server.search.MetaObjectNodeServerSearch;
 
 import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 
@@ -29,9 +32,13 @@ import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
  * @author   jweintraut
  * @version  $Revision$, $Date$
  */
-public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
+public class CidsMeasurementPointSearchStatement extends AbstractCidsServerSearch
+        implements MetaObjectNodeServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
+
+    /** LOGGER. */
+    private static final transient Logger LOG = Logger.getLogger(CidsMeasurementPointSearchStatement.class);
 
     private static final String DOMAIN = "WUNDA_BLAU";
     private static final String CIDSCLASS_ALKIS = "alkis_point";
@@ -160,21 +167,21 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
     //~ Methods ----------------------------------------------------------------
 
     @Override
-    public Collection performServerSearch() {
+    public Collection<MetaObjectNode> performServerSearch() {
         try {
-            getLog().info("Starting search for points. Pointcode: '" + pointcode + "', pointtypes: '" + pointtypes
+            LOG.info("Starting search for points. Pointcode: '" + pointcode + "', pointtypes: '" + pointtypes
                         + "', GST: '" + gst + "', geometry: '" + geometry.toString() + "'.");
 
             final ArrayList result = new ArrayList();
 
             if ((pointtypes == null) || pointtypes.isEmpty()) {
-                getLog().warn("There is no pointtype specified. Cancel search..");
+                LOG.warn("There is no pointtype specified. Cancel search..");
                 return result;
             }
 
-            final MetaService metaService = (MetaService)getActiveLoaclServers().get(DOMAIN);
+            final MetaService metaService = (MetaService)getActiveLocalServers().get(DOMAIN);
             if (metaService == null) {
-                getLog().error("Could not retrieve MetaService '" + DOMAIN + "'.");
+                LOG.error("Could not retrieve MetaService '" + DOMAIN + "'.");
                 return result;
             }
 
@@ -214,8 +221,8 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
             }
 
             final ArrayList<ArrayList> resultset;
-            if (getLog().isDebugEnabled()) {
-                getLog().debug("Executing SQL statement '" + sqlBuilder.toString() + "'.");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Executing SQL statement '" + sqlBuilder.toString() + "'.");
             }
             resultset = metaService.performCustomSearch(sqlBuilder.toString());
 
@@ -231,7 +238,7 @@ public class CidsMeasurementPointSearchStatement extends CidsServerSearch {
 
             return result;
         } catch (final Exception e) {
-            getLog().error("Problem", e);
+            LOG.error("Problem", e);
             throw new RuntimeException(e);
         }
     }
