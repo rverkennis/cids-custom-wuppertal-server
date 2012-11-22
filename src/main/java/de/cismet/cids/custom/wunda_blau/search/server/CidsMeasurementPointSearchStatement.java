@@ -170,7 +170,7 @@ public class CidsMeasurementPointSearchStatement extends AbstractCidsServerSearc
     public Collection<MetaObjectNode> performServerSearch() {
         try {
             LOG.info("Starting search for points. Pointcode: '" + pointcode + "', pointtypes: '" + pointtypes
-                        + "', GST: '" + gst + "', geometry: '" + geometry.toString() + "'.");
+                        + "', GST: '" + gst + "', geometry: '" + geometry + "'.");
 
             final ArrayList result = new ArrayList();
 
