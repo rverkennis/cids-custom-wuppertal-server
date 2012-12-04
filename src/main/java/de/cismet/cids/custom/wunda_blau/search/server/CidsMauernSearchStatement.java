@@ -174,7 +174,7 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
     private String generateFromClause() {
         if ((geom != null) && !geom.isEmpty()) {
             fromBuilder.append(JOIN_GEOM);
-            leadingConjucjtionNeeded = true;
+                leadingConjucjtionNeeded = true;
             if (geom != null) {
                 final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geom);
                 if ((geom instanceof Polygon) || (geom instanceof MultiPolygon)) { // with buffer for geostring
@@ -196,7 +196,7 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
 
         if ((eigentuemer != null) && !eigentuemer.isEmpty()) {
             fromBuilder.append(JOIN_EIGENTUEMER);
-            if (leadingConjucjtionNeeded) {
+             if (leadingConjucjtionNeeded) {
                 whereBuilder.append(CONJUNCTION);
             } else {
                 leadingConjucjtionNeeded = true;
