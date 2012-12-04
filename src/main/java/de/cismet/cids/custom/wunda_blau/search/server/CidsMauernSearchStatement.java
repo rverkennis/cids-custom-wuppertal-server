@@ -1,12 +1,10 @@
-/**
- * *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- * 
-* ... and it just works.
- * 
-***************************************************
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -39,16 +37,17 @@ import de.cismet.cismap.commons.jtsgeometryfactories.PostGisGeometryFactory;
 /**
  * DOCUMENT ME!
  *
- * @author daniel
- * @version $Revision$, $Date$
+ * @author   daniel
+ * @version  $Revision$, $Date$
  */
 public class CidsMauernSearchStatement extends AbstractCidsServerSearch implements MetaObjectNodeServerSearch {
 
     //~ Static fields/initializers ---------------------------------------------
+
     private static final Logger LOG = Logger.getLogger(CidsMauernSearchStatement.class);
     private static final String CIDSCLASS = "mauer";
     private static final String SQL_STMT = "SELECT DISTINCT (SELECT c.id FROM cs_class c WHERE table_name ilike '"
-            + CIDSCLASS + "') as class_id, m.id,m.lagebezeichnung as name FROM <fromClause> WHERE <whereClause>";
+                + CIDSCLASS + "') as class_id, m.id,m.lagebezeichnung as name FROM <fromClause> WHERE <whereClause>";
     private static final String FROM = CIDSCLASS + " m";
     private static final String JOIN_GEOM = " LEFT OUTER JOIN geom g ON m.georeferenz = g.id";
     private static final String JOIN_LASTKLASSE = " LEFT OUTER JOIN mauer_lastklasse l ON l.id=m.lastklasse";
@@ -56,30 +55,35 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
     private static final String DOMAIN = "WUNDA_BLAU";
 
     //~ Enums ------------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
-     * @version $Revision$, $Date$
+     * @version  $Revision$, $Date$
      */
     public enum SearchMode {
 
         //~ Enum constants -----------------------------------------------------
+
         AND_SEARCH, OR_SEARCH;
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @version $Revision$, $Date$
+     * @version  $Revision$, $Date$
      */
     public enum PropertyKeys {
 
         //~ Enum constants -----------------------------------------------------
+
         HOEHE_VON, HOEHE_BIS, GELAENDER_VON, GELAENDER_BIS, ANSICHT_VON, ANSICHT_BIS, WANDKOPF_VON, WANDKOPF_BIS,
         GRUENDUNG_VON, GRUENDUNG_BIS, VERFORMUNG_VON, VERFORMUNG_BIS, GELAENDE_VON, GELAENDE_BIS, BAUSUBSTANZ_VON,
         BAUSUBSTANZ_BIS, SANIERUNG_VON, SANIERUNG_BIS;
     }
+
     //~ Instance fields --------------------------------------------------------
+
     private boolean leadingConjucjtionNeeded = false;
     private boolean hoeheHandled = false;
     private boolean gelaenderHandled = false;
@@ -101,16 +105,17 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
     private final StringBuilder whereBuilder = new StringBuilder();
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new CidsMauernSearchStatement object.
      *
-     * @param eigentuemerIds DOCUMENT ME!
-     * @param pruefFrom DOCUMENT ME!
-     * @param pruefTil DOCUMENT ME!
-     * @param lastKlasseIds DOCUMENT ME!
-     * @param geom DOCUMENT ME!
-     * @param searchMode DOCUMENT ME!
-     * @param filterProps DOCUMENT ME!
+     * @param  eigentuemerIds  DOCUMENT ME!
+     * @param  pruefFrom       DOCUMENT ME!
+     * @param  pruefTil        DOCUMENT ME!
+     * @param  lastKlasseIds   DOCUMENT ME!
+     * @param  geom            DOCUMENT ME!
+     * @param  searchMode      DOCUMENT ME!
+     * @param  filterProps     DOCUMENT ME!
      */
     public CidsMauernSearchStatement(final List<Integer> eigentuemerIds,
             final Date pruefFrom,
@@ -129,12 +134,13 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
     }
 
     //~ Methods ----------------------------------------------------------------
+
     @Override
     public Collection<MetaObjectNode> performServerSearch() throws SearchException {
         try {
             final ArrayList result = new ArrayList();
             final StringBuilder sqlBuilder = new StringBuilder();
-            final MetaService metaService = (MetaService) getActiveLocalServers().get(DOMAIN);
+            final MetaService metaService = (MetaService)getActiveLocalServers().get(DOMAIN);
             if (metaService == null) {
                 LOG.error("Could not retrieve MetaService '" + DOMAIN + "'.");
                 return result;
@@ -151,9 +157,9 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
             resultset = metaService.performCustomSearch(sqlBuilder.toString());
 
             for (final ArrayList mauer : resultset) {
-                final int classID = (Integer) mauer.get(0);
-                final int objectID = (Integer) mauer.get(1);
-                final String name = (String) mauer.get(2);
+                final int classID = (Integer)mauer.get(0);
+                final int objectID = (Integer)mauer.get(1);
+                final String name = (String)mauer.get(2);
 
                 final MetaObjectNode node = new MetaObjectNode(DOMAIN, objectID, classID, name);
 
@@ -169,34 +175,34 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private String generateFromClause() {
         if ((geom != null) && !geom.isEmpty()) {
             fromBuilder.append(JOIN_GEOM);
-                leadingConjucjtionNeeded = true;
+            leadingConjucjtionNeeded = true;
             if (geom != null) {
                 final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geom);
                 if ((geom instanceof Polygon) || (geom instanceof MultiPolygon)) { // with buffer for geostring
                     whereBuilder.append(" intersects("
-                            + "st_buffer(geo_field, 0.000001),"
-                            + "st_buffer(GeometryFromText('"
-                            + geostring
-                            + "'), 0.000001))");
+                                + "st_buffer(geo_field, 0.000001),"
+                                + "st_buffer(GeometryFromText('"
+                                + geostring
+                                + "'), 0.000001))");
                 } else {                                                           // without buffer for
                     // geostring
                     whereBuilder.append(" and intersects("
-                            + "st_buffer(geo_field, 0.000001),"
-                            + "GeometryFromText('"
-                            + geostring
-                            + "'))");
+                                + "st_buffer(geo_field, 0.000001),"
+                                + "GeometryFromText('"
+                                + geostring
+                                + "'))");
                 }
             }
         }
 
         if ((eigentuemer != null) && !eigentuemer.isEmpty()) {
             fromBuilder.append(JOIN_EIGENTUEMER);
-             if (leadingConjucjtionNeeded) {
+            if (leadingConjucjtionNeeded) {
                 whereBuilder.append(CONJUNCTION);
             } else {
                 leadingConjucjtionNeeded = true;
@@ -236,7 +242,7 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private String generateWhereClause() {
         if ((pruefungFrom != null) || (pruefungTil != null)) {
@@ -267,7 +273,7 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
     /**
      * DOCUMENT ME!
      *
-     * @param pKey DOCUMENT ME!
+     * @param  pKey  DOCUMENT ME!
      */
     private void generateWhereConditionForProperty(final PropertyKeys pKey) {
         if ((!hoeheHandled) && ((pKey == PropertyKeys.HOEHE_VON) || (pKey == PropertyKeys.HOEHE_BIS))) {
@@ -319,8 +325,8 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
                 whereBuilder.append(") ");
             }
         } else if ((!gelaenderHandled)
-                && ((pKey == PropertyKeys.GELAENDER_VON)
-                || (pKey == PropertyKeys.GELAENDER_BIS))) {
+                    && ((pKey == PropertyKeys.GELAENDER_VON)
+                        || (pKey == PropertyKeys.GELAENDER_BIS))) {
             gelaenderHandled = true;
             final Double vonValue = filter.get(PropertyKeys.GELAENDER_VON);
             final Double bisValue = filter.get(PropertyKeys.GELAENDER_BIS);
@@ -369,8 +375,8 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
                 whereBuilder.append(") ");
             }
         } else if ((!gruendungHandled)
-                && ((pKey == PropertyKeys.GRUENDUNG_VON)
-                || (pKey == PropertyKeys.GRUENDUNG_BIS))) {
+                    && ((pKey == PropertyKeys.GRUENDUNG_VON)
+                        || (pKey == PropertyKeys.GRUENDUNG_BIS))) {
             gruendungHandled = true;
             final Double vonValue = filter.get(PropertyKeys.GRUENDUNG_VON);
             final Double bisValue = filter.get(PropertyKeys.GRUENDUNG_BIS);
@@ -395,8 +401,8 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
                 whereBuilder.append(") ");
             }
         } else if (!verformungHandled
-                && ((pKey == PropertyKeys.VERFORMUNG_VON)
-                || (pKey == PropertyKeys.VERFORMUNG_BIS))) {
+                    && ((pKey == PropertyKeys.VERFORMUNG_VON)
+                        || (pKey == PropertyKeys.VERFORMUNG_BIS))) {
             verformungHandled = true;
             final Double vonValue = filter.get(PropertyKeys.VERFORMUNG_VON);
             final Double bisValue = filter.get(PropertyKeys.VERFORMUNG_BIS);
@@ -445,7 +451,7 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
                 whereBuilder.append(") ");
             }
         } else if (((pKey == PropertyKeys.BAUSUBSTANZ_VON)
-                || (pKey == PropertyKeys.BAUSUBSTANZ_BIS)) && !bausubstanzHandled) {
+                        || (pKey == PropertyKeys.BAUSUBSTANZ_BIS)) && !bausubstanzHandled) {
             bausubstanzHandled = true;
             final Double vonValue = filter.get(PropertyKeys.BAUSUBSTANZ_VON);
             final Double bisValue = filter.get(PropertyKeys.BAUSUBSTANZ_BIS);
@@ -474,7 +480,7 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
                 whereBuilder.append(") ");
             }
         } else if (((pKey == PropertyKeys.SANIERUNG_VON)
-                || (pKey == PropertyKeys.SANIERUNG_BIS)) && !sanierungHandled) {
+                        || (pKey == PropertyKeys.SANIERUNG_BIS)) && !sanierungHandled) {
             sanierungHandled = true;
             final Double vonValue = filter.get(PropertyKeys.SANIERUNG_VON);
             final Double bisValue = filter.get(PropertyKeys.GELAENDE_BIS);
