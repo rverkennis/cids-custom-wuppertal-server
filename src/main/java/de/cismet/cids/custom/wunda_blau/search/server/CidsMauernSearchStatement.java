@@ -148,6 +148,15 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
                 return result;
             }
 
+            if ((geom == null) && ((eigentuemer == null) || eigentuemer.isEmpty())
+                        && ((lastKlasseIds == null) || lastKlasseIds.isEmpty())
+                        && (pruefungFrom == null)
+                        && (pruefungTil == null)
+                        && ((filter == null) || filter.isEmpty())) {
+                LOG.warn("No filters provided. Cancel search.");
+                return result;
+            }
+
             sqlBuilder.append(SQL_STMT.replace("<fromClause>", generateFromClause()).replace(
                     "<whereClause>",
                     generateWhereClause()));
@@ -180,7 +189,7 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
      * @return  DOCUMENT ME!
      */
     private String generateFromClause() {
-        if ((geom != null) && !geom.isEmpty()) {
+        if ((geom != null)) {
             fromBuilder.append(JOIN_GEOM);
         }
 
@@ -266,7 +275,7 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
             generateWhereConditionForProperty(pKey);
         }
 
-        if ((geom != null) && !geom.isEmpty()) {
+        if (geom != null) {
             if (whereNeeded) {
                 whereBuilder.append("WHERE");
                 whereNeeded = false;
@@ -275,6 +284,12 @@ public class CidsMauernSearchStatement extends AbstractCidsServerSearch implemen
                 lastBraceNeeded = false;
             }
             final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geom);
+//            whereBuilder.append(CONJUNCTION);
+
+            whereBuilder.append(" g.geo_field && GeometryFromText('").append(geostring).append("')");
+
+            whereBuilder.append("AND");
+
             if ((geom instanceof Polygon) || (geom instanceof MultiPolygon)) { // with buffer for geostring
                 whereBuilder.append(" intersects("
                             + "st_buffer(geo_field, 0.000001),"
