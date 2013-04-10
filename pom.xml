@@ -16,6 +16,13 @@
 
     <name>cids Custom Wuppertal ServerStuff</name>
     <description>!!! description pending !!!</description>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License</name>
+            <distribution>repo</distribution>
+            <url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
+        </license>
+    </licenses>
 
     <prerequisites>
         <maven>3</maven>
@@ -61,7 +68,7 @@
         <dependency>
             <groupId>de.aedsicad</groupId>
             <artifactId>aaawebclient</artifactId>
-            <version>6.1.1</version>
+            <version>6.2.0.3</version>
         </dependency>
         <dependency>
             <groupId>axis</groupId>
@@ -73,7 +80,7 @@
     <build>
         <plugins>
             <!-- overwritten because the artifact has to be renamed du to
-                 compatibility reasons to the cidsDistribution -->
+            compatibility reasons to the cidsDistribution -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
