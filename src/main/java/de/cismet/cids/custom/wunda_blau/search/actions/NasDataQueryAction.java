@@ -13,44 +13,8 @@ package de.cismet.cids.custom.wunda_blau.search.actions;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import de.aed_sicad.namespaces.svr.AMAuftragServer;
-import de.aed_sicad.namespaces.svr.AuftragsManager;
 import de.aed_sicad.namespaces.svr.AuftragsManagerSoap;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringReader;
-
-import java.net.URL;
-
-import java.util.Properties;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import de.cismet.cids.custom.utils.nas.GML3Writer;
 import de.cismet.cids.custom.utils.nas.NASProductGenerator;
 
 import de.cismet.cids.server.actions.ServerAction;
@@ -89,16 +53,28 @@ public class NasDataQueryAction implements ServerAction {
      *
      * @version  $Revision$, $Date$
      */
+    public enum METHOD_TYPE {
+
+        //~ Enum constants -----------------------------------------------------
+
+        ADD, GET, GET_ALL
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
     public enum PARAMETER_TYPE {
 
         //~ Enum constants -----------------------------------------------------
 
-        TEMPLATE, GEOMETRY, ADD, GET, GET_ALL,
+        TEMPLATE, GEOMETRY, METHOD, ORDER_ID
     }
 
     //~ Instance fields --------------------------------------------------------
 
-    private AuftragsManagerSoap manager;
+    private final NASProductGenerator nasPg = new NASProductGenerator();
 
     //~ Methods ----------------------------------------------------------------
 
@@ -106,16 +82,30 @@ public class NasDataQueryAction implements ServerAction {
     public Object execute(final Object body, final ServerActionParameter... params) {
         PRODUCT_TEMPLATE template = null;
         Geometry geom = null;
+        METHOD_TYPE method = null;
+        String orderId = null;
         for (final ServerActionParameter sap : params) {
             if (sap.getKey().equals(PARAMETER_TYPE.TEMPLATE.toString())) {
                 template = (PRODUCT_TEMPLATE)sap.getValue();
             } else if (sap.getKey().equals(PARAMETER_TYPE.GEOMETRY.toString())) {
                 geom = (Geometry)sap.getValue();
+            } else if (sap.getKey().equals(PARAMETER_TYPE.METHOD.toString())) {
+                method = (METHOD_TYPE)sap.getValue();
+            } else if (sap.getKey().equals(PARAMETER_TYPE.ORDER_ID.toString())) {
+                orderId = (String)sap.getValue();
             }
         }
-        final NASProductGenerator nasPg = new NASProductGenerator();
+        if (method == METHOD_TYPE.ADD) {
+            return nasPg.executeAsynchQuery(template, geom);
+        } else if (method == METHOD_TYPE.GET) {
+            if (orderId == null) {
+                LOG.error("missing order id for get request");
+                return null;
+            }
+            return nasPg.getResultForOrder(orderId);
+        }
 
-        return nasPg.executeAsynchQuery(template, geom);
+        return null;
     }
 
     @Override
