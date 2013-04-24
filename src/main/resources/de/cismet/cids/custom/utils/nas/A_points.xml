@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AX_Benutzungsauftrag xmlns="http://www.adv-online.de/namespaces/adv/gid/6.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ogc="http://www.adv-online.de/namespaces/adv/gid/ogc" xmlns:wfs="http://www.adv-online.de/namespaces/adv/gid/wfs" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wfsext="http://www.adv-online.de/namespaces/adv/gid/wfsext" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" xsi:schemaLocation="http://www.adv-online.de/namespaces/adv/gid/6.0 NAS-Operationen.xsd">
+	<empfaenger>
+		<AA_Empfaenger>
+			<direkt>true</direkt>
+		</AA_Empfaenger>
+	</empfaenger>
+	<ausgabeform>application/gzip</ausgabeform>
+	<art>0010</art>
+	<koordinatenreferenzsystem xlink:href="urn:adv:crs:ETRS89_UTM32"/>
+	<anforderungsmerkmale>
+		<wfs:Query typeName="AX_PunktortAG">
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">istTeilVon/AX_BesondererBauwerkspunkt/inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="2">istTeilVon/AX_BesondererBauwerkspunkt/bestehtAus</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyPath>istTeilVon/AX_BesondererBauwerkspunkt</wfsext:XlinkPropertyPath>
+			<ogc:Filter>
+				<ogc:And>
+					<wfsext:PropertyIsOfType>
+						<ogc:PropertyName>istTeilVon</ogc:PropertyName>
+						<ogc:Literal>AX_BesondererBauwerkspunkt</ogc:Literal>
+					</wfsext:PropertyIsOfType>
+					<ogc:Intersects>
+						<ogc:PropertyName>position</ogc:PropertyName>
+					<gml:Polygon gml:id="G0" srsName="urn:adv:crs:ETRS89_UTM32"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve gml:id="G1"><gml:segments><gml:LineStringSegment><gml:posList>376982.87 5682480.778 377005.227 5682457.362</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G2"><gml:segments><gml:LineStringSegment><gml:posList>377005.227 5682457.362 377005.36 5682457.23</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G3"><gml:segments><gml:LineStringSegment><gml:posList>377005.36 5682457.23 376998.348 5682450.615</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G4"><gml:segments><gml:LineStringSegment><gml:posList>376998.348 5682450.615 376975.065 5682473.634</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G5"><gml:segments><gml:LineStringSegment><gml:posList>376975.065 5682473.634 376982.87 5682480.778</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></ogc:Intersects>
+				</ogc:And>
+			</ogc:Filter>
+		</wfs:Query>
+	</anforderungsmerkmale>
+	<anforderungsmerkmale>
+		<wfs:Query typeName="AX_PunktortAG">
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">istTeilVon/AX_BesondererGebaeudepunkt/inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="2">istTeilVon/AX_BesondererGebaeudepunkt/bestehtAus</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyPath>istTeilVon/AX_BesondererGebaeudepunkt</wfsext:XlinkPropertyPath>
+			<ogc:Filter>
+				<ogc:And>
+					<wfsext:PropertyIsOfType>
+						<ogc:PropertyName>istTeilVon</ogc:PropertyName>
+						<ogc:Literal>AX_BesondererGebaeudepunkt</ogc:Literal>
+					</wfsext:PropertyIsOfType>
+					<ogc:Intersects>
+						<ogc:PropertyName>position</ogc:PropertyName>
+					<gml:Polygon gml:id="G6" srsName="urn:adv:crs:ETRS89_UTM32"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve gml:id="G7"><gml:segments><gml:LineStringSegment><gml:posList>376982.87 5682480.778 377005.227 5682457.362</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G8"><gml:segments><gml:LineStringSegment><gml:posList>377005.227 5682457.362 377005.36 5682457.23</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G9"><gml:segments><gml:LineStringSegment><gml:posList>377005.36 5682457.23 376998.348 5682450.615</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G10"><gml:segments><gml:LineStringSegment><gml:posList>376998.348 5682450.615 376975.065 5682473.634</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G11"><gml:segments><gml:LineStringSegment><gml:posList>376975.065 5682473.634 376982.87 5682480.778</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></ogc:Intersects>
+				</ogc:And>
+			</ogc:Filter>
+		</wfs:Query>
+	</anforderungsmerkmale>
+	<anforderungsmerkmale>
+		<wfs:Query typeName="AX_PunktortAU">
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="2">istTeilVon/AX_Aufnahmepunkt/hat</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyPath>istTeilVon/AX_Aufnahmepunkt</wfsext:XlinkPropertyPath>
+			<ogc:Filter>
+				<ogc:And>
+					<wfsext:PropertyIsOfType>
+						<ogc:PropertyName>istTeilVon</ogc:PropertyName>
+						<ogc:Literal>AX_Aufnahmepunkt</ogc:Literal>
+					</wfsext:PropertyIsOfType>
+					<ogc:Intersects>
+						<ogc:PropertyName>position</ogc:PropertyName>
+					<gml:Polygon gml:id="G12" srsName="urn:adv:crs:ETRS89_UTM32"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve gml:id="G13"><gml:segments><gml:LineStringSegment><gml:posList>376982.87 5682480.778 377005.227 5682457.362</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G14"><gml:segments><gml:LineStringSegment><gml:posList>377005.227 5682457.362 377005.36 5682457.23</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G15"><gml:segments><gml:LineStringSegment><gml:posList>377005.36 5682457.23 376998.348 5682450.615</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G16"><gml:segments><gml:LineStringSegment><gml:posList>376998.348 5682450.615 376975.065 5682473.634</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G17"><gml:segments><gml:LineStringSegment><gml:posList>376975.065 5682473.634 376982.87 5682480.778</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></ogc:Intersects>
+				</ogc:And>
+			</ogc:Filter>
+		</wfs:Query>
+	</anforderungsmerkmale>
+	<anforderungsmerkmale>
+		<wfs:Query typeName="AX_PunktortAU">
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">istTeilVon/AX_Aufnahmepunkt/inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="2">istTeilVon/AX_Aufnahmepunkt/bestehtAus</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyPath>istTeilVon/AX_Aufnahmepunkt</wfsext:XlinkPropertyPath>
+			<ogc:Filter>
+				<ogc:And>
+					<wfsext:PropertyIsOfType>
+						<ogc:PropertyName>istTeilVon</ogc:PropertyName>
+						<ogc:Literal>AX_Aufnahmepunkt</ogc:Literal>
+					</wfsext:PropertyIsOfType>
+					<ogc:Intersects>
+						<ogc:PropertyName>position</ogc:PropertyName>
+					<gml:Polygon gml:id="G18" srsName="urn:adv:crs:ETRS89_UTM32"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve gml:id="G19"><gml:segments><gml:LineStringSegment><gml:posList>376982.87 5682480.778 377005.227 5682457.362</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G20"><gml:segments><gml:LineStringSegment><gml:posList>377005.227 5682457.362 377005.36 5682457.23</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G21"><gml:segments><gml:LineStringSegment><gml:posList>377005.36 5682457.23 376998.348 5682450.615</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G22"><gml:segments><gml:LineStringSegment><gml:posList>376998.348 5682450.615 376975.065 5682473.634</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G23"><gml:segments><gml:LineStringSegment><gml:posList>376975.065 5682473.634 376982.87 5682480.778</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></ogc:Intersects>
+				</ogc:And>
+			</ogc:Filter>
+		</wfs:Query>
+	</anforderungsmerkmale>
+	<anforderungsmerkmale>
+		<wfs:Query typeName="AX_PunktortAU">
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">istTeilVon/AX_BesondererBauwerkspunkt/inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="2">istTeilVon/AX_BesondererBauwerkspunkt/bestehtAus</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyPath>istTeilVon/AX_BesondererBauwerkspunkt</wfsext:XlinkPropertyPath>
+			<ogc:Filter>
+				<ogc:And>
+					<wfsext:PropertyIsOfType>
+						<ogc:PropertyName>istTeilVon</ogc:PropertyName>
+						<ogc:Literal>AX_BesondererBauwerkspunkt</ogc:Literal>
+					</wfsext:PropertyIsOfType>
+					<ogc:Intersects>
+						<ogc:PropertyName>position</ogc:PropertyName>
+					<gml:Polygon gml:id="G24" srsName="urn:adv:crs:ETRS89_UTM32"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve gml:id="G25"><gml:segments><gml:LineStringSegment><gml:posList>376982.87 5682480.778 377005.227 5682457.362</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G26"><gml:segments><gml:LineStringSegment><gml:posList>377005.227 5682457.362 377005.36 5682457.23</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G27"><gml:segments><gml:LineStringSegment><gml:posList>377005.36 5682457.23 376998.348 5682450.615</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G28"><gml:segments><gml:LineStringSegment><gml:posList>376998.348 5682450.615 376975.065 5682473.634</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G29"><gml:segments><gml:LineStringSegment><gml:posList>376975.065 5682473.634 376982.87 5682480.778</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></ogc:Intersects>
+				</ogc:And>
+			</ogc:Filter>
+		</wfs:Query>
+	</anforderungsmerkmale>
+	<anforderungsmerkmale>
+		<wfs:Query typeName="AX_PunktortAU">
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">istTeilVon/AX_BesondererGebaeudepunkt/inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="2">istTeilVon/AX_BesondererGebaeudepunkt/bestehtAus</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyPath>istTeilVon/AX_BesondererGebaeudepunkt</wfsext:XlinkPropertyPath>
+			<ogc:Filter>
+				<ogc:And>
+					<wfsext:PropertyIsOfType>
+						<ogc:PropertyName>istTeilVon</ogc:PropertyName>
+						<ogc:Literal>AX_BesondererGebaeudepunkt</ogc:Literal>
+					</wfsext:PropertyIsOfType>
+					<ogc:Intersects>
+						<ogc:PropertyName>position</ogc:PropertyName>
+					<gml:Polygon gml:id="G30" srsName="urn:adv:crs:ETRS89_UTM32"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve gml:id="G31"><gml:segments><gml:LineStringSegment><gml:posList>376982.87 5682480.778 377005.227 5682457.362</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G32"><gml:segments><gml:LineStringSegment><gml:posList>377005.227 5682457.362 377005.36 5682457.23</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G33"><gml:segments><gml:LineStringSegment><gml:posList>377005.36 5682457.23 376998.348 5682450.615</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G34"><gml:segments><gml:LineStringSegment><gml:posList>376998.348 5682450.615 376975.065 5682473.634</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G35"><gml:segments><gml:LineStringSegment><gml:posList>376975.065 5682473.634 376982.87 5682480.778</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></ogc:Intersects>
+				</ogc:And>
+			</ogc:Filter>
+		</wfs:Query>
+	</anforderungsmerkmale>
+	<anforderungsmerkmale>
+		<wfs:Query typeName="AX_PunktortAU">
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">istTeilVon/AX_BesondererTopographischerPunkt/inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="2">istTeilVon/AX_BesondererTopographischerPunkt/bestehtAus</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyPath>istTeilVon/AX_BesondererTopographischerPunkt</wfsext:XlinkPropertyPath>
+			<ogc:Filter>
+				<ogc:And>
+					<wfsext:PropertyIsOfType>
+						<ogc:PropertyName>istTeilVon</ogc:PropertyName>
+						<ogc:Literal>AX_BesondererTopographischerPunkt</ogc:Literal>
+					</wfsext:PropertyIsOfType>
+					<ogc:Intersects>
+						<ogc:PropertyName>position</ogc:PropertyName>
+					<gml:Polygon gml:id="G36" srsName="urn:adv:crs:ETRS89_UTM32"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve gml:id="G37"><gml:segments><gml:LineStringSegment><gml:posList>376982.87 5682480.778 377005.227 5682457.362</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G38"><gml:segments><gml:LineStringSegment><gml:posList>377005.227 5682457.362 377005.36 5682457.23</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G39"><gml:segments><gml:LineStringSegment><gml:posList>377005.36 5682457.23 376998.348 5682450.615</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G40"><gml:segments><gml:LineStringSegment><gml:posList>376998.348 5682450.615 376975.065 5682473.634</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G41"><gml:segments><gml:LineStringSegment><gml:posList>376975.065 5682473.634 376982.87 5682480.778</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></ogc:Intersects>
+				</ogc:And>
+			</ogc:Filter>
+		</wfs:Query>
+	</anforderungsmerkmale>
+	<anforderungsmerkmale>
+		<wfs:Query typeName="AX_PunktortAU">
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">istTeilVon/AX_Grenzpunkt/inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="2">istTeilVon/AX_Grenzpunkt/bestehtAus</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyPath>istTeilVon/AX_Grenzpunkt</wfsext:XlinkPropertyPath>
+			<ogc:Filter>
+				<ogc:And>
+					<wfsext:PropertyIsOfType>
+						<ogc:PropertyName>istTeilVon</ogc:PropertyName>
+						<ogc:Literal>AX_Grenzpunkt</ogc:Literal>
+					</wfsext:PropertyIsOfType>
+					<ogc:Intersects>
+						<ogc:PropertyName>position</ogc:PropertyName>
+					<gml:Polygon gml:id="G42" srsName="urn:adv:crs:ETRS89_UTM32"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve gml:id="G43"><gml:segments><gml:LineStringSegment><gml:posList>376982.87 5682480.778 377005.227 5682457.362</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G44"><gml:segments><gml:LineStringSegment><gml:posList>377005.227 5682457.362 377005.36 5682457.23</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G45"><gml:segments><gml:LineStringSegment><gml:posList>377005.36 5682457.23 376998.348 5682450.615</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G46"><gml:segments><gml:LineStringSegment><gml:posList>376998.348 5682450.615 376975.065 5682473.634</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G47"><gml:segments><gml:LineStringSegment><gml:posList>376975.065 5682473.634 376982.87 5682480.778</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></ogc:Intersects>
+				</ogc:And>
+			</ogc:Filter>
+		</wfs:Query>
+	</anforderungsmerkmale>
+	<anforderungsmerkmale>
+		<wfs:Query typeName="AX_PunktortAU">
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">istTeilVon/AX_Sicherungspunkt/inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="2">istTeilVon/AX_Sicherungspunkt/bestehtAus</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyPath>istTeilVon/AX_Sicherungspunkt</wfsext:XlinkPropertyPath>
+			<ogc:Filter>
+				<ogc:And>
+					<wfsext:PropertyIsOfType>
+						<ogc:PropertyName>istTeilVon</ogc:PropertyName>
+						<ogc:Literal>AX_Sicherungspunkt</ogc:Literal>
+					</wfsext:PropertyIsOfType>
+					<ogc:Intersects>
+						<ogc:PropertyName>position</ogc:PropertyName>
+					<gml:Polygon gml:id="G48" srsName="urn:adv:crs:ETRS89_UTM32"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve gml:id="G49"><gml:segments><gml:LineStringSegment><gml:posList>376982.87 5682480.778 377005.227 5682457.362</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G50"><gml:segments><gml:LineStringSegment><gml:posList>377005.227 5682457.362 377005.36 5682457.23</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G51"><gml:segments><gml:LineStringSegment><gml:posList>377005.36 5682457.23 376998.348 5682450.615</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G52"><gml:segments><gml:LineStringSegment><gml:posList>376998.348 5682450.615 376975.065 5682473.634</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G53"><gml:segments><gml:LineStringSegment><gml:posList>376975.065 5682473.634 376982.87 5682480.778</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></ogc:Intersects>
+				</ogc:And>
+			</ogc:Filter>
+		</wfs:Query>
+	</anforderungsmerkmale>
+	<anforderungsmerkmale>
+		<wfs:Query typeName="AX_PunktortAU">
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">istTeilVon/AX_SonstigerVermessungspunkt/inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="2">istTeilVon/AX_SonstigerVermessungspunkt/bestehtAus</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyPath>istTeilVon/AX_SonstigerVermessungspunkt</wfsext:XlinkPropertyPath>
+			<ogc:Filter>
+				<ogc:And>
+					<wfsext:PropertyIsOfType>
+						<ogc:PropertyName>istTeilVon</ogc:PropertyName>
+						<ogc:Literal>AX_SonstigerVermessungspunkt</ogc:Literal>
+					</wfsext:PropertyIsOfType>
+					<ogc:Intersects>
+						<ogc:PropertyName>position</ogc:PropertyName>
+					<gml:Polygon gml:id="G54" srsName="urn:adv:crs:ETRS89_UTM32"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve gml:id="G55"><gml:segments><gml:LineStringSegment><gml:posList>376982.87 5682480.778 377005.227 5682457.362</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G56"><gml:segments><gml:LineStringSegment><gml:posList>377005.227 5682457.362 377005.36 5682457.23</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G57"><gml:segments><gml:LineStringSegment><gml:posList>377005.36 5682457.23 376998.348 5682450.615</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G58"><gml:segments><gml:LineStringSegment><gml:posList>376998.348 5682450.615 376975.065 5682473.634</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G59"><gml:segments><gml:LineStringSegment><gml:posList>376975.065 5682473.634 376982.87 5682480.778</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></ogc:Intersects>
+				</ogc:And>
+			</ogc:Filter>
+		</wfs:Query>
+	</anforderungsmerkmale>
+	<anforderungsmerkmale>
+		<wfs:Query typeName="AX_PunktortTA">
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="1">istTeilVon/AX_Grenzpunkt/inversZu_dientZurDarstellungVon</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyName traverseXlinkDepth="2">istTeilVon/AX_Grenzpunkt/bestehtAus</wfsext:XlinkPropertyName>
+			<wfsext:XlinkPropertyPath>istTeilVon/AX_Grenzpunkt</wfsext:XlinkPropertyPath>
+			<ogc:Filter>
+				<ogc:And>
+					<wfsext:PropertyIsOfType>
+						<ogc:PropertyName>istTeilVon</ogc:PropertyName>
+						<ogc:Literal>AX_Grenzpunkt</ogc:Literal>
+					</wfsext:PropertyIsOfType>
+					<ogc:Intersects>
+						<ogc:PropertyName>position</ogc:PropertyName>
+					<gml:Polygon gml:id="G60" srsName="urn:adv:crs:ETRS89_UTM32"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve gml:id="G61"><gml:segments><gml:LineStringSegment><gml:posList>376982.87 5682480.778 377005.227 5682457.362</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G62"><gml:segments><gml:LineStringSegment><gml:posList>377005.227 5682457.362 377005.36 5682457.23</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G63"><gml:segments><gml:LineStringSegment><gml:posList>377005.36 5682457.23 376998.348 5682450.615</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G64"><gml:segments><gml:LineStringSegment><gml:posList>376998.348 5682450.615 376975.065 5682473.634</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember><gml:curveMember><gml:Curve gml:id="G65"><gml:segments><gml:LineStringSegment><gml:posList>376975.065 5682473.634 376982.87 5682480.778</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></ogc:Intersects>
+				</ogc:And>
+			</ogc:Filter>
+		</wfs:Query>
+	</anforderungsmerkmale>
+  <profilkennung>a</profilkennung>
+  <antragsnummer>WOS_34977_0_ALKISDaten</antragsnummer>
+  <selektionsmassstab>0500</selektionsmassstab>
+  <folgeverarbeitung>
+    <AX_FOLGEVA>
+      <formatangabe>DINA4 Hoch</formatangabe>
+      <ausgabemedium>1000</ausgabemedium>
+      <datenformat>1000</datenformat>
+    </AX_FOLGEVA>
+  </folgeverarbeitung>
+</AX_Benutzungsauftrag>
