@@ -37,6 +37,7 @@ import java.net.URL;
 
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -77,7 +78,7 @@ public class NASProductGenerator {
     private final String PW;
     private final String OUTPUT_DIR;
     private HashSet<String> openOrders = new HashSet<String>();
-//    private static final Logger log = org.apache.log4j.Logger.getLogger(NASProductGenerator.class);
+    private HashSet<String> undeliveredOrders = new HashSet<String>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -208,6 +209,7 @@ public class NASProductGenerator {
         final int sessionID = manager.login(USER, PW);
         final String orderId = manager.registerGZip(sessionID, gZipFile(preparedQuery));
         openOrders.add(orderId);
+        undeliveredOrders.add(orderId);
 
         final Runnable r = new Runnable() {
 
@@ -244,7 +246,17 @@ public class NASProductGenerator {
             }
             return null;
         }
+        undeliveredOrders.remove(orderId);
         return loadFile(orderId);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public Set<String> getUndeliveredOrders() {
+        return undeliveredOrders;
     }
 
     /**

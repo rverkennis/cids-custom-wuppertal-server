@@ -13,7 +13,6 @@ package de.cismet.cids.custom.wunda_blau.search.actions;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import de.aed_sicad.namespaces.svr.AuftragsManagerSoap;
 
 import de.cismet.cids.custom.utils.nas.NASProductGenerator;
 
@@ -103,6 +102,8 @@ public class NasDataQueryAction implements ServerAction {
                 return null;
             }
             return nasPg.getResultForOrder(orderId);
+        } else if (method == METHOD_TYPE.GET_ALL) {
+            return nasPg.getUndeliveredOrders();
         }
 
         return null;
