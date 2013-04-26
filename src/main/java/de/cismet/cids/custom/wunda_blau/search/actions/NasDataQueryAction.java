@@ -11,13 +11,15 @@
  */
 package de.cismet.cids.custom.wunda_blau.search.actions;
 
-import com.vividsolutions.jts.geom.Geometry;
+import Sirius.server.newuser.User;
 
+import com.vividsolutions.jts.geom.Geometry;
 
 import de.cismet.cids.custom.utils.nas.NASProductGenerator;
 
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
+import de.cismet.cids.server.actions.UserAwareServerAction;
 
 /**
  * DOCUMENT ME!
@@ -26,7 +28,7 @@ import de.cismet.cids.server.actions.ServerActionParameter;
  * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
-public class NasDataQueryAction implements ServerAction {
+public class NasDataQueryAction implements UserAwareServerAction {
 
     //~ Static fields/initializers ---------------------------------------------
 
@@ -73,7 +75,8 @@ public class NasDataQueryAction implements ServerAction {
 
     //~ Instance fields --------------------------------------------------------
 
-    private final NASProductGenerator nasPg = new NASProductGenerator();
+    private final NASProductGenerator nasPg = NASProductGenerator.instance();
+    private User user;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -95,15 +98,15 @@ public class NasDataQueryAction implements ServerAction {
             }
         }
         if (method == METHOD_TYPE.ADD) {
-            return nasPg.executeAsynchQuery(template, geom);
+            return nasPg.executeAsynchQuery(template, geom, user);
         } else if (method == METHOD_TYPE.GET) {
             if (orderId == null) {
                 LOG.error("missing order id for get request");
                 return null;
             }
-            return nasPg.getResultForOrder(orderId);
+            return nasPg.getResultForOrder(orderId, user);
         } else if (method == METHOD_TYPE.GET_ALL) {
-            return nasPg.getUndeliveredOrders();
+            return nasPg.getUndeliveredOrders(user);
         }
 
         return null;
@@ -112,5 +115,15 @@ public class NasDataQueryAction implements ServerAction {
     @Override
     public String getTaskName() {
         return "nasDataQuery";
+    }
+
+    @Override
+    public User getUser() {
+        return user;
+    }
+
+    @Override
+    public void setUser(final User user) {
+        this.user = user;
     }
 }
