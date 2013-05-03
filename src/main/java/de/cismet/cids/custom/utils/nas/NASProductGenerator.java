@@ -1,12 +1,10 @@
-/**
- * *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- * 
-* ... and it just works.
- * 
-***************************************************
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 package de.cismet.cids.custom.utils.nas;
 
 import Sirius.server.newuser.User;
@@ -73,15 +71,18 @@ import de.cismet.cids.custom.wunda_blau.search.actions.NasDataQueryAction;
 /**
  * DOCUMENT ME!
  *
- * @author daniel
- * @version $Revision$, $Date$
+ * @author   daniel
+ * @version  $Revision$, $Date$
  */
 public class NASProductGenerator {
 
     //~ Static fields/initializers ---------------------------------------------
+
     private static final String FILE_APPENDIX = ".xml";
     private static NASProductGenerator instance;
+
     //~ Instance fields --------------------------------------------------------
+
     final File openOrdersLogFile;
     final File undeliveredOrdersLogFile;
     private final transient org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(this.getClass());
@@ -94,10 +95,11 @@ public class NASProductGenerator {
     private HashMap<String, HashSet<String>> undeliveredOrderMap = new HashMap<String, HashSet<String>>();
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new NASProductGenerator object.
      *
-     * @throws RuntimeException DOCUMENT ME!
+     * @throws  RuntimeException  DOCUMENT ME!
      */
     private NASProductGenerator() {
         final Properties serviceProperties = new Properties();
@@ -126,7 +128,7 @@ public class NASProductGenerator {
                 undeliveredOrdersLogFile.createNewFile();
             }
             if (!(openOrdersLogFile.isFile() && openOrdersLogFile.canWrite())
-                    || !(undeliveredOrdersLogFile.isFile() && undeliveredOrdersLogFile.canWrite())) {
+                        || !(undeliveredOrdersLogFile.isFile() && undeliveredOrdersLogFile.canWrite())) {
                 log.error("could not write to order log files");
             }
             initFromOrderLogFiles();
@@ -137,10 +139,11 @@ public class NASProductGenerator {
     }
 
     //~ Methods ----------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     public static NASProductGenerator instance() {
         if (instance == null) {
@@ -177,9 +180,9 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param loadedJsonObj DOCUMENT ME!
+     * @param   loadedJsonObj  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private HashMap<String, HashSet<String>> transformJsonMap(final Map<String, ArrayList<String>> loadedJsonObj) {
         final HashMap<String, HashSet<String>> map = new HashMap<String, HashSet<String>>();
@@ -193,10 +196,10 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param geom DOCUMENT ME!
-     * @param templateFile DOCUMENT ME!
+     * @param   geom          DOCUMENT ME!
+     * @param   templateFile  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private InputStream generateQeury(final Geometry geom, final InputStream templateFile) {
         int gmlId = 0;
@@ -257,11 +260,11 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param template DOCUMENT ME!
-     * @param geom DOCUMENT ME!
-     * @param user DOCUMENT ME!
+     * @param   template  DOCUMENT ME!
+     * @param   geom      DOCUMENT ME!
+     * @param   user      DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     public String executeAsynchQuery(final NasDataQueryAction.PRODUCT_TEMPLATE template,
             final Geometry geom,
@@ -301,6 +304,9 @@ public class NASProductGenerator {
         return orderId;
     }
 
+    /**
+     * DOCUMENT ME!
+     */
     private void initAmManager() {
         final AuftragsManager am;
         try {
@@ -315,10 +321,10 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param orderId DOCUMENT ME!
-     * @param user DOCUMENT ME!
+     * @param   orderId  DOCUMENT ME!
+     * @param   user     DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     public byte[] getResultForOrder(final String orderId, final User user) {
         final HashSet<String> openUserOrders = openOrderMap.get(deterimineUserPrefix(user));
@@ -340,9 +346,9 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param user DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     public Set<String> getUndeliveredOrders(final User user) {
         return undeliveredOrderMap.get(deterimineUserPrefix(user));
@@ -351,9 +357,9 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param is queryFile DOCUMENT ME!
+     * @param   is  queryFile DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private byte[] gZipFile(final InputStream is) {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -381,7 +387,7 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param protocol DOCUMENT ME!
+     * @param  protocol  DOCUMENT ME!
      */
     private void logProtocol(final byte[] protocol) {
         final byte[] unzippedProtocol = gunzip(protocol);
@@ -393,9 +399,9 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param data DOCUMENT ME!
+     * @param   data  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private byte[] gunzip(final byte[] data) {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -426,9 +432,9 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param userKey DOCUMENT ME!
-     * @param orderId DOCUMENT ME!
-     * @param data DOCUMENT ME!
+     * @param  userKey  DOCUMENT ME!
+     * @param  orderId  DOCUMENT ME!
+     * @param  data     DOCUMENT ME!
      */
     private void unzipAndSaveFile(final String userKey, final String orderId, final byte[] data) {
         final File file = new File(determineFileName(userKey, orderId));
@@ -464,10 +470,10 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param userKey DOCUMENT ME!
-     * @param orderId DOCUMENT ME!
+     * @param   userKey  DOCUMENT ME!
+     * @param   orderId  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private byte[] loadFile(final String userKey, final String orderId) {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -500,10 +506,10 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param userKey DOCUMENT ME!
-     * @param orderId DOCUMENT ME!
+     * @param   userKey  DOCUMENT ME!
+     * @param   orderId  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private String determineFileName(final String userKey, final String orderId) {
         final StringBuilder fileNameBuilder = new StringBuilder(OUTPUT_DIR);
@@ -518,9 +524,9 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param user DOCUMENT ME!
+     * @param   user  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private String deterimineUserPrefix(final User user) {
         return user.getId() + "_" + user.getName();
@@ -529,8 +535,8 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param userKey userId DOCUMENT ME!
-     * @param orderId DOCUMENT ME!
+     * @param  userKey  userId DOCUMENT ME!
+     * @param  orderId  DOCUMENT ME!
      */
     private void addToOpenOrders(final String userKey, final String orderId) {
         HashSet<String> openUserOders = openOrderMap.get(userKey);
@@ -545,8 +551,8 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param userKey userId DOCUMENT ME!
-     * @param orderId DOCUMENT ME!
+     * @param  userKey  userId DOCUMENT ME!
+     * @param  orderId  DOCUMENT ME!
      */
     private void removeFromOpenOrders(final String userKey, final String orderId) {
         final HashSet<String> openUserOrders = openOrderMap.get(userKey);
@@ -564,8 +570,8 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param userKey userId DOCUMENT ME!
-     * @param orderId DOCUMENT ME!
+     * @param  userKey  userId DOCUMENT ME!
+     * @param  orderId  DOCUMENT ME!
      */
     private void addToUndeliveredOrders(final String userKey, final String orderId) {
         HashSet<String> undeliveredUserOders = undeliveredOrderMap.get(userKey);
@@ -580,8 +586,8 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param userKey userId DOCUMENT ME!
-     * @param orderId DOCUMENT ME!
+     * @param  userKey  userId DOCUMENT ME!
+     * @param  orderId  DOCUMENT ME!
      */
     private void removeFromUndeliveredOrders(final String userKey, final String orderId) {
         final HashSet<String> undeliveredUserOders = undeliveredOrderMap.get(userKey);
@@ -612,23 +618,26 @@ public class NASProductGenerator {
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
-     * @version $Revision$, $Date$
+     * @version  $Revision$, $Date$
      */
     private class NasProductDownloader implements Runnable {
 
         //~ Instance fields ----------------------------------------------------
+
         private String orderId;
         private String userId;
 
         //~ Constructors -------------------------------------------------------
+
         /**
          * Creates a new NasProductDownloader object.
          *
-         * @param userId DOCUMENT ME!
-         * @param orderId DOCUMENT ME!
+         * @param  userId   DOCUMENT ME!
+         * @param  orderId  DOCUMENT ME!
          */
         public NasProductDownloader(final String userId, final String orderId) {
             this.orderId = orderId;
@@ -636,6 +645,7 @@ public class NASProductGenerator {
         }
 
         //~ Methods ------------------------------------------------------------
+
         @Override
         public void run() {
             initAmManager();
