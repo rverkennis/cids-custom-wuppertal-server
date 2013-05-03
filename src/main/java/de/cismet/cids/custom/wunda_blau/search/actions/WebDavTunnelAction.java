@@ -72,24 +72,48 @@ public class WebDavTunnelAction implements ServerAction {
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
         try {
-            final ServerActionParameter param = params[0];
-            final String path = (String)param.getValue();
+            String path = null;
+            boolean isGet = false;
+            boolean isPut = false;
+            boolean isDelete = false;
+            Proxy proxy = null;
+            String username = null;
+            String password = null;
+            boolean useNTAuth = false;
 
-            final Proxy proxy = (Proxy)params[1].getValue();
-            final String username = (String)params[2].getValue();
-            final String password = (String)params[3].getValue();
-            final Boolean useNTAuth = (Boolean)params[4].getValue();
+            for (final ServerActionParameter sap : params) {
+                if (sap.getKey().equals(PARAMETER_TYPE.PROXY.toString())) {
+                    proxy = (Proxy)sap.getValue();
+                } else if (sap.getKey().equals(PARAMETER_TYPE.USERNAME.toString())) {
+                    username = (String)sap.getValue();
+                } else if (sap.getKey().equals(PARAMETER_TYPE.PASSWORD.toString())) {
+                    password = (String)sap.getValue();
+                } else if (sap.getKey().equals(PARAMETER_TYPE.NTAUTH.toString())) {
+                    useNTAuth = (Boolean)sap.getValue();
+                } else if (sap.getKey().equals(PARAMETER_TYPE.GET.toString())) {
+                    path = (String)sap.getValue();
+                    isGet = true;
+                } else if (sap.getKey().equals(PARAMETER_TYPE.PUT.toString())) {
+                    path = (String)sap.getValue();
+                    isPut = true;
+                } else if (sap.getKey().equals(PARAMETER_TYPE.DELETE.toString())) {
+                    path = (String)sap.getValue();
+                    isDelete = true;
+                }
+            }
 
             final WebDavClient webdavclient = new WebDavClient(proxy, username, password, useNTAuth);
 
-            if (param.getKey().equals(PARAMETER_TYPE.GET.toString())) {
+            if (isGet) {
                 final InputStream is = webdavclient.getInputStream(path);
                 return IOUtils.toByteArray(is);
-            } else if (param.getKey().equals(PARAMETER_TYPE.PUT.toString())) {
+            } else if (isPut) {
                 final InputStream data = new ByteArrayInputStream((byte[])body);
                 webdavclient.put(path, data);
-            } else if (param.getKey().equals(PARAMETER_TYPE.DELETE.toString())) {
+            } else if (isDelete) {
                 webdavclient.delete(path);
+            } else {
+                throw new RuntimeException("Problem during WebDavTunnelAction - request have to be get, put or delete");
             }
             return null;
         } catch (Exception exception) {
