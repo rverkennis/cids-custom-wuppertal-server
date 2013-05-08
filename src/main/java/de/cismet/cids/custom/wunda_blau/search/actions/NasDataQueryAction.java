@@ -58,7 +58,7 @@ public class NasDataQueryAction implements UserAwareServerAction {
 
         //~ Enum constants -----------------------------------------------------
 
-        ADD, GET, GET_ALL
+        ADD, GET, GET_ALL, CANCEL
     }
 
     /**
@@ -107,6 +107,8 @@ public class NasDataQueryAction implements UserAwareServerAction {
             return nasPg.getResultForOrder(orderId, user);
         } else if (method == METHOD_TYPE.GET_ALL) {
             return nasPg.getUndeliveredOrders(user);
+        } else if (method == METHOD_TYPE.CANCEL) {
+            nasPg.cancelOrder(orderId, user);
         }
 
         return null;

@@ -94,6 +94,7 @@ public class NASProductGenerator {
     private final String OUTPUT_DIR;
     private HashMap<String, HashSet<String>> openOrderMap = new HashMap<String, HashSet<String>>();
     private HashMap<String, HashSet<String>> undeliveredOrderMap = new HashMap<String, HashSet<String>>();
+    private HashMap<String, NasProductDownloader> downloaderMap = new HashMap<String, NasProductDownloader>();
 
     //~ Constructors -----------------------------------------------------------
 
@@ -165,7 +166,9 @@ public class NASProductGenerator {
             for (final String userId : openOrderMap.keySet()) {
                 final HashSet<String> openOrderIds = openOrderMap.get(userId);
                 for (final String orderId : openOrderIds) {
-                    final Thread workerThread = new Thread(new NasProductDownloader(userId, orderId));
+                    final NasProductDownloader downloader = new NasProductDownloader(userId, orderId);
+                    downloaderMap.put(orderId, downloader);
+                    final Thread workerThread = new Thread(downloader);
                     workerThread.start();
                 }
             }
@@ -299,7 +302,9 @@ public class NASProductGenerator {
         addToOpenOrders(deterimineUserPrefix(user), orderId);
         addToUndeliveredOrders(deterimineUserPrefix(user), orderId);
 
-        final Thread workerThread = new Thread(new NasProductDownloader(deterimineUserPrefix(user), orderId));
+        final NasProductDownloader downloader = new NasProductDownloader(deterimineUserPrefix(user), orderId);
+        downloaderMap.put(orderId, downloader);
+        final Thread workerThread = new Thread(downloader);
         workerThread.start();
 
         return orderId;
@@ -354,7 +359,22 @@ public class NASProductGenerator {
     public Set<String> getUndeliveredOrders(final User user) {
         return undeliveredOrderMap.get(deterimineUserPrefix(user));
     }
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  orderId  DOCUMENT ME!
+     * @param  user     DOCUMENT ME!
+     */
+    public void cancelOrder(final String orderId, final User user) {
+        final String userKey = deterimineUserPrefix(user);
+        final NasProductDownloader downloader = downloaderMap.get(orderId);
+        downloader.setInterrupted(true);
+        downloaderMap.remove(orderId);
+        removeFromOpenOrders(userKey, orderId);
+        removeFromUndeliveredOrders(userKey, orderId);
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -631,6 +651,7 @@ public class NASProductGenerator {
 
         private String orderId;
         private String userId;
+        private boolean interrupted;
 
         //~ Constructors -------------------------------------------------------
 
@@ -656,6 +677,10 @@ public class NASProductGenerator {
 
                     @Override
                     public void run() {
+                        if (interrupted) {
+                            log.info("interrupting the dowload of nas order "+orderId);
+                            t.cancel();
+                        }
                         final AMAuftragServer amServer = manager.listAuftrag(sessionId, orderId);
                         if (amServer.getWannBeendet() == null) {
                             return;
@@ -667,6 +692,15 @@ public class NASProductGenerator {
                         removeFromOpenOrders(userId, orderId);
                     }
                 }, REQUEST_PERIOD, REQUEST_PERIOD);
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  interrupted  DOCUMENT ME!
+         */
+        public void setInterrupted(final boolean interrupted) {
+            this.interrupted = interrupted;
         }
     }
 }
