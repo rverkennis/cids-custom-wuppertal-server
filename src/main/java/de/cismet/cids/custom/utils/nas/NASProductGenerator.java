@@ -20,8 +20,6 @@ import de.aed_sicad.namespaces.svr.AMAuftragServer;
 import de.aed_sicad.namespaces.svr.AuftragsManager;
 import de.aed_sicad.namespaces.svr.AuftragsManagerSoap;
 
-import org.openide.util.Exceptions;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -49,6 +47,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -80,6 +80,7 @@ public class NASProductGenerator {
 
     private static final String FILE_APPENDIX = ".xml";
     private static NASProductGenerator instance;
+    private static final int REQUEST_PERIOD = 3000;
 
     //~ Instance fields --------------------------------------------------------
 
@@ -353,7 +354,7 @@ public class NASProductGenerator {
     public Set<String> getUndeliveredOrders(final User user) {
         return undeliveredOrderMap.get(deterimineUserPrefix(user));
     }
-
+    
     /**
      * DOCUMENT ME!
      *
@@ -649,16 +650,23 @@ public class NASProductGenerator {
         @Override
         public void run() {
             initAmManager();
-            final int sessionID = manager.login(USER, PW);
-            AMAuftragServer amServer = manager.listAuftrag(sessionID, orderId);
-            while (amServer.getWannBeendet() == null) {
-                amServer = manager.listAuftrag(sessionID, orderId);
-            }
+            final int sessionId = manager.login(USER, PW);
+            final Timer t = new Timer();
+            t.scheduleAtFixedRate(new TimerTask() {
 
-            logProtocol(manager.getProtocolGZip(sessionID, orderId));
-            unzipAndSaveFile(userId, orderId, manager.getResultGZip(sessionID, orderId));
+                    @Override
+                    public void run() {
+                        final AMAuftragServer amServer = manager.listAuftrag(sessionId, orderId);
+                        if (amServer.getWannBeendet() == null) {
+                            return;
+                        }
+                        t.cancel();
+                        logProtocol(manager.getProtocolGZip(sessionId, orderId));
+                        unzipAndSaveFile(userId, orderId, manager.getResultGZip(sessionId, orderId));
 
-            removeFromOpenOrders(userId, orderId);
+                        removeFromOpenOrders(userId, orderId);
+                    }
+                }, REQUEST_PERIOD, REQUEST_PERIOD);
         }
     }
 }
