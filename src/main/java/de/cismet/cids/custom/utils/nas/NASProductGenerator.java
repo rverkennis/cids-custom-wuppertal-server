@@ -299,10 +299,10 @@ public class NASProductGenerator {
         final int sessionID = manager.login(USER, PW);
         final String orderId = manager.registerGZip(sessionID, gZipFile(preparedQuery));
 
-        addToOpenOrders(deterimineUserPrefix(user), orderId);
-        addToUndeliveredOrders(deterimineUserPrefix(user), orderId);
+        addToOpenOrders(determineUserPrefix(user), orderId);
+        addToUndeliveredOrders(determineUserPrefix(user), orderId);
 
-        final NasProductDownloader downloader = new NasProductDownloader(deterimineUserPrefix(user), orderId);
+        final NasProductDownloader downloader = new NasProductDownloader(determineUserPrefix(user), orderId);
         downloaderMap.put(orderId, downloader);
         final Thread workerThread = new Thread(downloader);
         workerThread.start();
@@ -333,20 +333,20 @@ public class NASProductGenerator {
      * @return  DOCUMENT ME!
      */
     public byte[] getResultForOrder(final String orderId, final User user) {
-        final HashSet<String> openUserOrders = openOrderMap.get(deterimineUserPrefix(user));
+        final HashSet<String> openUserOrders = openOrderMap.get(determineUserPrefix(user));
         if ((openUserOrders != null) && openUserOrders.contains(orderId)) {
             if (log.isDebugEnabled()) {
                 log.debug("requesting an order that isnt not done");
             }
             return null;
         }
-        final HashSet<String> undeliveredUserOrders = undeliveredOrderMap.get(deterimineUserPrefix(user));
+        final HashSet<String> undeliveredUserOrders = undeliveredOrderMap.get(determineUserPrefix(user));
         if ((undeliveredUserOrders == null) || undeliveredUserOrders.isEmpty()) {
             log.error("there are no undelivered nas orders for the user " + user.toString());
             return null;
         }
-        removeFromUndeliveredOrders(deterimineUserPrefix(user), orderId);
-        return loadFile(deterimineUserPrefix(user), orderId);
+        removeFromUndeliveredOrders(determineUserPrefix(user), orderId);
+        return loadFile(determineUserPrefix(user), orderId);
     }
 
     /**
@@ -357,7 +357,7 @@ public class NASProductGenerator {
      * @return  DOCUMENT ME!
      */
     public Set<String> getUndeliveredOrders(final User user) {
-        return undeliveredOrderMap.get(deterimineUserPrefix(user));
+        return undeliveredOrderMap.get(determineUserPrefix(user));
     }
 
     /**
@@ -367,12 +367,13 @@ public class NASProductGenerator {
      * @param  user     DOCUMENT ME!
      */
     public void cancelOrder(final String orderId, final User user) {
-        final String userKey = deterimineUserPrefix(user);
+        final String userKey = determineUserPrefix(user);
         final NasProductDownloader downloader = downloaderMap.get(orderId);
         downloader.setInterrupted(true);
         downloaderMap.remove(orderId);
         removeFromOpenOrders(userKey, orderId);
         removeFromUndeliveredOrders(userKey, orderId);
+        deleteFileIfExists(orderId, user);
     }
 
     /**
@@ -549,7 +550,7 @@ public class NASProductGenerator {
      *
      * @return  DOCUMENT ME!
      */
-    private String deterimineUserPrefix(final User user) {
+    private String determineUserPrefix(final User user) {
         return user.getId() + "_" + user.getName();
     }
 
@@ -626,7 +627,7 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      */
-    private void updateJsonLogFiles() {
+    private synchronized void updateJsonLogFiles() {
         final ObjectMapper mapper = new ObjectMapper();
         final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
 
@@ -635,6 +636,22 @@ public class NASProductGenerator {
             writer.writeValue(openOrdersLogFile, openOrderMap);
         } catch (IOException ex) {
             log.error("error during writing open and undelivered order maps to file", ex);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  orderId  DOCUMENT ME!
+     * @param  user     DOCUMENT ME!
+     */
+    private void deleteFileIfExists(final String orderId, final User user) {
+        final String userKey = determineUserPrefix(user);
+        final File file = new File(determineFileName(userKey, orderId));
+        if (file.exists()) {
+            if (!file.delete()) {
+                log.warn("could not delete file " + file.toString());
+            }
         }
     }
 
@@ -651,7 +668,7 @@ public class NASProductGenerator {
 
         private String orderId;
         private String userId;
-        private boolean interrupted;
+        private boolean interrupted = false;
 
         //~ Constructors -------------------------------------------------------
 
@@ -678,8 +695,11 @@ public class NASProductGenerator {
                     @Override
                     public void run() {
                         if (interrupted) {
-                            log.info("interrupting the dowload of nas order "+orderId);
+                            log.info(
+                                "interrupting the dowload of nas order "
+                                        + orderId);
                             t.cancel();
+                            return;
                         }
                         final AMAuftragServer amServer = manager.listAuftrag(sessionId, orderId);
                         if (amServer.getWannBeendet() == null) {
@@ -687,9 +707,14 @@ public class NASProductGenerator {
                         }
                         t.cancel();
                         logProtocol(manager.getProtocolGZip(sessionId, orderId));
-                        unzipAndSaveFile(userId, orderId, manager.getResultGZip(sessionId, orderId));
-
-                        removeFromOpenOrders(userId, orderId);
+                        if (!interrupted) {
+                            unzipAndSaveFile(userId, orderId, manager.getResultGZip(sessionId, orderId));
+                            removeFromOpenOrders(userId, orderId);
+                        } else {
+                            log.info(
+                                "interrupting the dowload of nas order "
+                                        + orderId);
+                        }
                     }
                 }, REQUEST_PERIOD, REQUEST_PERIOD);
         }
