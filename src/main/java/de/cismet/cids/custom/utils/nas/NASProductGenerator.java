@@ -270,16 +270,16 @@ public class NASProductGenerator {
      *
      * @return  DOCUMENT ME!
      */
-    public String executeAsynchQuery(final NasDataQueryAction.PRODUCT_TEMPLATE template,
+    public String executeAsynchQuery(final NasProductTemplate template,
             final Geometry geom,
             final User user) {
         InputStream templateFile = null;
 
         try {
-            if (template == NasDataQueryAction.PRODUCT_TEMPLATE.KOMPLETT) {
+            if (template == NasProductTemplate.KOMPLETT) {
                 templateFile = NASProductGenerator.class.getResourceAsStream(
                         "A_komplett.xml");
-            } else if (template == NasDataQueryAction.PRODUCT_TEMPLATE.OHNE_EIGENTUEMER) {
+            } else if (template == NasProductTemplate.OHNE_EIGENTUEMER) {
                 templateFile = NASProductGenerator.class.getResourceAsStream(
                         "A_o_eigentuemer.xml");
             } else {

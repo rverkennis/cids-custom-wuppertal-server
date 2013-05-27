@@ -16,6 +16,7 @@ import Sirius.server.newuser.User;
 import com.vividsolutions.jts.geom.Geometry;
 
 import de.cismet.cids.custom.utils.nas.NASProductGenerator;
+import de.cismet.cids.custom.utils.nas.NasProductTemplate;
 
 import de.cismet.cids.server.actions.ServerAction;
 import de.cismet.cids.server.actions.ServerActionParameter;
@@ -36,18 +37,6 @@ public class NasDataQueryAction implements UserAwareServerAction {
             NasDataQueryAction.class);
 
     //~ Enums ------------------------------------------------------------------
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @version  $Revision$, $Date$
-     */
-    public enum PRODUCT_TEMPLATE {
-
-        //~ Enum constants -----------------------------------------------------
-
-        KOMPLETT, OHNE_EIGENTUEMER, POINTS
-    }
 
     /**
      * DOCUMENT ME!
@@ -82,13 +71,13 @@ public class NasDataQueryAction implements UserAwareServerAction {
 
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
-        PRODUCT_TEMPLATE template = null;
+        NasProductTemplate template = null;
         Geometry geom = null;
         METHOD_TYPE method = null;
         String orderId = null;
         for (final ServerActionParameter sap : params) {
             if (sap.getKey().equals(PARAMETER_TYPE.TEMPLATE.toString())) {
-                template = (PRODUCT_TEMPLATE)sap.getValue();
+                template = (NasProductTemplate)sap.getValue();
             } else if (sap.getKey().equals(PARAMETER_TYPE.GEOMETRY.toString())) {
                 geom = (Geometry)sap.getValue();
             } else if (sap.getKey().equals(PARAMETER_TYPE.METHOD.toString())) {
