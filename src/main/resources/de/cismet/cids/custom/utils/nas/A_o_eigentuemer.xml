@@ -3851,7 +3851,7 @@
     </wfs:Query>
   </anforderungsmerkmale>
   <profilkennung>a</profilkennung>
-  <antragsnummer>WOS_34976_0_ALKISDaten</antragsnummer>
+  <antragsnummer>REQUEST-ID</antragsnummer>
   <selektionsmassstab>0500</selektionsmassstab>
   <folgeverarbeitung>
     <AX_FOLGEVA>

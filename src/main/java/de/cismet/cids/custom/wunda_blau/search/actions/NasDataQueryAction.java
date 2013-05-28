@@ -59,7 +59,7 @@ public class NasDataQueryAction implements UserAwareServerAction {
 
         //~ Enum constants -----------------------------------------------------
 
-        TEMPLATE, GEOMETRY, METHOD, ORDER_ID
+        TEMPLATE, GEOMETRY, METHOD, ORDER_ID, REQUEST_ID
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -75,6 +75,7 @@ public class NasDataQueryAction implements UserAwareServerAction {
         Geometry geom = null;
         METHOD_TYPE method = null;
         String orderId = null;
+        String requestId = null;
         for (final ServerActionParameter sap : params) {
             if (sap.getKey().equals(PARAMETER_TYPE.TEMPLATE.toString())) {
                 template = (NasProductTemplate)sap.getValue();
@@ -84,10 +85,12 @@ public class NasDataQueryAction implements UserAwareServerAction {
                 method = (METHOD_TYPE)sap.getValue();
             } else if (sap.getKey().equals(PARAMETER_TYPE.ORDER_ID.toString())) {
                 orderId = (String)sap.getValue();
+            } else if (sap.getKey().equals(PARAMETER_TYPE.REQUEST_ID.toString())) {
+                requestId = (String)sap.getValue();
             }
         }
         if (method == METHOD_TYPE.ADD) {
-            return nasPg.executeAsynchQuery(template, geom, user);
+            return nasPg.executeAsynchQuery(template, geom, user, requestId);
         } else if (method == METHOD_TYPE.GET) {
             if (orderId == null) {
                 LOG.error("missing order id for get request");

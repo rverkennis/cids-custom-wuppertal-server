@@ -62,8 +62,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import de.cismet.cids.custom.wunda_blau.search.actions.NasDataQueryAction;
-
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -81,6 +79,7 @@ public class NASProductGenerator {
     private static final String FILE_APPENDIX = ".xml";
     private static NASProductGenerator instance;
     private static final int REQUEST_PERIOD = 3000;
+    private static final String REQUEST_PLACE_HOLDER = "REQUEST-ID";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -202,10 +201,11 @@ public class NASProductGenerator {
      *
      * @param   geom          DOCUMENT ME!
      * @param   templateFile  DOCUMENT ME!
+     * @param   requestName   DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    private InputStream generateQeury(final Geometry geom, final InputStream templateFile) {
+    private InputStream generateQeury(final Geometry geom, final InputStream templateFile, final String requestName) {
         int gmlId = 0;
         try {
             final String xmlGeom = GML3Writer.writeGML3_2WithETRS89(geom);
@@ -246,7 +246,10 @@ public class NASProductGenerator {
             if (log.isDebugEnabled()) {
                 log.debug(outputStream.toString());
             }
-            return new ByteArrayInputStream(outputStream.toByteArray());
+            // set the request id that is shown in the 3A Auftagsmanagement Interface
+            String request = outputStream.toString();
+            request = request.replaceAll(REQUEST_PLACE_HOLDER, requestName);
+            return new ByteArrayInputStream(request.getBytes());
         } catch (ParserConfigurationException ex) {
             log.error("Parser Configuration Error", ex);
         } catch (SAXException ex) {
@@ -264,15 +267,17 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param   template  DOCUMENT ME!
-     * @param   geom      DOCUMENT ME!
-     * @param   user      DOCUMENT ME!
+     * @param   template   DOCUMENT ME!
+     * @param   geom       DOCUMENT ME!
+     * @param   user       DOCUMENT ME!
+     * @param   requestId  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     public String executeAsynchQuery(final NasProductTemplate template,
             final Geometry geom,
-            final User user) {
+            final User user,
+            final String requestId) {
         InputStream templateFile = null;
 
         try {
@@ -295,7 +300,8 @@ public class NASProductGenerator {
         }
 
         initAmManager();
-        final InputStream preparedQuery = generateQeury(geom, templateFile);
+        final String requestName = getRequestName(user, requestId);
+        final InputStream preparedQuery = generateQeury(geom, templateFile, requestName);
         final int sessionID = manager.login(USER, PW);
         final String orderId = manager.registerGZip(sessionID, gZipFile(preparedQuery));
 
@@ -459,6 +465,10 @@ public class NASProductGenerator {
      * @param  data     DOCUMENT ME!
      */
     private void unzipAndSaveFile(final String userKey, final String orderId, final byte[] data) {
+        if (data == null) {
+            log.error("result of nas order " + orderId + " is null");
+            return;
+        }
         final File file = new File(determineFileName(userKey, orderId));
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
@@ -653,6 +663,18 @@ public class NASProductGenerator {
                 log.warn("could not delete file " + file.toString());
             }
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user       DOCUMENT ME!
+     * @param   requestId  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getRequestName(final User user, final String requestId) {
+        return user.getName() + "_" + requestId;
     }
 
     //~ Inner Classes ----------------------------------------------------------
