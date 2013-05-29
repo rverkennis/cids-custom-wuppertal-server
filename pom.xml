@@ -75,6 +75,7 @@
             <artifactId>axis</artifactId>
             <version>1.4</version>
         </dependency>
+        <!--ToDo check if this dependency is really needed-->
         <dependency>
             <groupId>de.cismet.cids</groupId>
             <artifactId>nas_client</artifactId>
