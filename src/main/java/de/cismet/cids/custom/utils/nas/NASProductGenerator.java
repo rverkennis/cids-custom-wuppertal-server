@@ -344,11 +344,15 @@ public class NASProductGenerator {
             if (log.isDebugEnabled()) {
                 log.debug("requesting an order that isnt not done");
             }
-            return null;
+            return new byte[0];
         }
         final HashSet<String> undeliveredUserOrders = undeliveredOrderMap.get(determineUserPrefix(user));
         if ((undeliveredUserOrders == null) || undeliveredUserOrders.isEmpty()) {
             log.error("there are no undelivered nas orders for the user " + user.toString());
+            return null;
+        }
+        if (!undeliveredUserOrders.contains(orderId)) {
+            log.error("there is no order for user " + user.toString() + " with order id " + orderId);
             return null;
         }
         removeFromUndeliveredOrders(determineUserPrefix(user), orderId);
