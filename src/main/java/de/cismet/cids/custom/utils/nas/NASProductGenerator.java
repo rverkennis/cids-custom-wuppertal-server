@@ -321,7 +321,7 @@ public class NASProductGenerator {
 
             return orderId;
         } catch (RemoteException ex) {
-            log.error("could not create conenction to 3A Server",ex);
+            log.error("could not create conenction to 3A Server", ex);
         }
         return null;
     }
@@ -695,7 +695,7 @@ public class NASProductGenerator {
     //~ Inner Classes ----------------------------------------------------------
 
     /**
-     * NasProductDownloader checks at a fixed rate if the nas order is completed in the 3A order management system
+     * NasProductDownloader checks at a fixed rate if the nas order is completed in the 3A order management system.
      *
      * @version  $Revision$, $Date$
      */
@@ -759,7 +759,7 @@ public class NASProductGenerator {
                                 }
                             } catch (RemoteException ex) {
                                 Exceptions.printStackTrace(ex);
-                            } 
+                            }
                         }
                     }, REQUEST_PERIOD, REQUEST_PERIOD);
             } catch (RemoteException ex) {

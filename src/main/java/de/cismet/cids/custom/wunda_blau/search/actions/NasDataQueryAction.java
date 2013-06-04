@@ -15,7 +15,6 @@ import Sirius.server.newuser.User;
 
 import com.vividsolutions.jts.geom.GeometryCollection;
 
-
 import de.cismet.cids.custom.utils.nas.NASProductGenerator;
 import de.cismet.cids.custom.utils.nas.NasProductTemplate;
 

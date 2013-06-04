@@ -36,8 +36,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
- * This class provides an easy way to convert JTS Geometry Collections into an xml representation that is suited to 
- * the 3A Server interface used in for NAS-queries
+ * This class provides an easy way to convert JTS Geometry Collections into an xml representation that is suited to the
+ * 3A Server interface used in for NAS-queries.
  *
  * @author   daniel
  * @version  $Revision$, $Date$
