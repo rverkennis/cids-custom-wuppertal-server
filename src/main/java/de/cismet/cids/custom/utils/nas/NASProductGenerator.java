@@ -18,6 +18,7 @@ import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
 
 import de.aed_sicad.www.namespaces.svr.AM_AuftragServer;
 import de.aed_sicad.www.namespaces.svr.AuftragsManagerLocator;
@@ -207,7 +208,9 @@ public class NASProductGenerator {
      *
      * @return  DOCUMENT ME!
      */
-    private InputStream generateQeury(final Geometry geom, final InputStream templateFile, final String requestName) {
+    private InputStream generateQeury(final GeometryCollection geom,
+            final InputStream templateFile,
+            final String requestName) {
         int gmlId = 0;
         try {
             final String xmlGeom = GML3Writer.writeGML3_2WithETRS89(geom);
@@ -233,6 +236,13 @@ public class NASProductGenerator {
                 }
                 newPolygonNode.setAttribute("gml:id", "G" + gmlId);
                 gmlId++;
+                // set id for surface nodes
+                final NodeList surfaceNodes = newPolygonNode.getElementsByTagName("gml:Surface");
+                for (int j = 0; j < surfaceNodes.getLength(); j++) {
+                    final Element surfaceNode = (Element)surfaceNodes.item(j);
+                    surfaceNode.setAttribute("gml:id", "G" + gmlId);
+                    gmlId++;
+                }
                 final Node importedNode = doc.importNode(newPolygonNode, true);
                 intersectNodes.item(i).removeChild(oldPolygonNode);
                 intersectNodes.item(i).appendChild(importedNode);
@@ -269,14 +279,14 @@ public class NASProductGenerator {
      * DOCUMENT ME!
      *
      * @param   template   DOCUMENT ME!
-     * @param   geom       DOCUMENT ME!
+     * @param   geoms      DOCUMENT ME!
      * @param   user       DOCUMENT ME!
      * @param   requestId  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
     public String executeAsynchQuery(final NasProductTemplate template,
-            final Geometry geom,
+            final GeometryCollection geoms,
             final User user,
             final String requestId) {
         try {
@@ -296,13 +306,13 @@ public class NASProductGenerator {
             } catch (Exception ex) {
                 log.fatal("ka", ex);
             }
-            if (geom == null) {
+            if (geoms == null) {
                 log.error("geometry is null, cannot execute nas query");
                 return null;
             }
 
             final String requestName = getRequestName(user, requestId);
-            final InputStream preparedQuery = generateQeury(geom, templateFile, requestName);
+            final InputStream preparedQuery = generateQeury(geoms, templateFile, requestName);
             initAmManager();
             final int sessionID = manager.login(USER, PW);
             final String orderId = manager.registerGZip(sessionID, gZipFile(preparedQuery));

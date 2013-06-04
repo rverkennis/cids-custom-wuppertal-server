@@ -14,11 +14,12 @@ package de.cismet.cids.custom.utils.nas;
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
-import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
 
 import org.openide.util.Exceptions;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -49,7 +50,7 @@ public class GML3Writer {
     /**
      * DOCUMENT ME!
      *
-     * @param   geometry     DOCUMENT ME!
+     * @param   geometries   DOCUMENT ME!
      * @param   crs          DOCUMENT ME!
      * @param   srsNameProp  DOCUMENT ME!
      *
@@ -86,19 +87,19 @@ public class GML3Writer {
     /**
      * DOCUMENT ME!
      *
-     * @param   geometry     DOCUMENT ME!
+     * @param   geometries   DOCUMENT ME!
      * @param   crs          DOCUMENT ME!
      * @param   srsNameProp  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public static String convertToGML(final Geometry geometry, final String crs, final String srsNameProp) {
+    public static String convertToGML(final GeometryCollection geometries, final String crs, final String srsNameProp) {
         String rawXML = "";
         try {
 //            CrsTransformer.transformToGivenCrs(geometry, crs);
             final JAXBContext ffo = JAXBContext.newInstance("org.jvnet.ogc.gml.v_3_1_1.jts");
             final StringWriter sw = new StringWriter();
-            ffo.createMarshaller().marshal(geometry, sw);
+            ffo.createMarshaller().marshal(geometries, sw);
             rawXML = sw.getBuffer().toString();
 
             // replace ns1 prefix through gml
@@ -130,13 +131,24 @@ public class GML3Writer {
                 newNode.setTextContent(poslistCoords.toString());
                 linearRingNodes.item(i).appendChild(newNode);
             }
-//            final TransformerFactory tFactory = TransformerFactory.newInstance();
-//            final Transformer transformer = tFactory.newTransformer();
 
-//            final ByteArrayOutputStream os = new ByteArrayOutputStream();
-//            final DOMSource source = new DOMSource(doc);
-//            final StreamResult result = new StreamResult(os);
-//            transformer.transform(source, result);
+            /*
+             * the 3A Server just likes MultiSurfaces so we have to convert the geom into an MultiSurface
+             */
+
+            final NodeList geometryMemberNodes = doc.getElementsByTagName("gml:geometryMember");
+            for (int i = 0; i < geometryMemberNodes.getLength(); i++) {
+                final Node geometryMember = geometryMemberNodes.item(i);
+                final Node oldPolygonNode = geometryMember.getFirstChild();
+                geometryMember.removeChild(oldPolygonNode);
+                final Element surface = doc.createElement("gml:Surface");
+                surface.setAttribute("srsName", srsNameProp);
+                final Element patches = doc.createElement("gml:patches");
+                surface.appendChild(patches);
+                patches.appendChild(oldPolygonNode);
+                geometryMember.appendChild(surface);
+            }
+
             final OutputFormat format = new OutputFormat(doc);
             // as a String
             final StringWriter stringOut = new StringWriter();
@@ -153,15 +165,13 @@ public class GML3Writer {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        }
-//        catch (TransformerConfigurationException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (TransformerException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
+        // replcae MultiGeom with MultiSurface since 3A Server just likes MultiSurfaces
+        rawXML = rawXML.replaceAll("MultiGeometry", "MultiSurface");
+        rawXML = rawXML.replaceAll("geometryMember", "surfaceMember");
+        rawXML = rawXML.replaceAll("Polygon", "PolygonPatch");
         // remove the xml doc elem
         rawXML = rawXML.replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "");
         // remove the namespaces that are inserted by jvnet parser
@@ -179,13 +189,13 @@ public class GML3Writer {
     /**
      * DOCUMENT ME!
      *
-     * @param   geometry  DOCUMENT ME!
+     * @param   geometries  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    public static String writeGML3_2WithETRS89(final com.vividsolutions.jts.geom.Geometry geometry) {
+    public static String writeGML3_2WithETRS89(final GeometryCollection geometries) {
 //        return convertToGML(geometry, "EPSG:25832", "urn:adv:crs:ETRS89_UTM32");
-        final String confluence = convertToGML(geometry, "EPSG:25832", "urn:adv:crs:ETRS89_UTM32");
+        final String confluence = convertToGML(geometries, "EPSG:25832", "urn:adv:crs:ETRS89_UTM32");
 //        final String deegree = convertToGMLWithDeegree(geometry, "EPSG:25832", "urn:adv:crs:ETRS89_UTM32");
         return confluence;
     }
