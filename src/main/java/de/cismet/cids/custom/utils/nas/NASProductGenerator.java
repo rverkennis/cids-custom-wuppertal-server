@@ -14,11 +14,16 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
+import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
+
 import com.vividsolutions.jts.geom.Geometry;
 
-import de.aed_sicad.namespaces.svr.AMAuftragServer;
-import de.aed_sicad.namespaces.svr.AuftragsManager;
-import de.aed_sicad.namespaces.svr.AuftragsManagerSoap;
+import de.aed_sicad.www.namespaces.svr.AM_AuftragServer;
+import de.aed_sicad.www.namespaces.svr.AuftragsManagerLocator;
+import de.aed_sicad.www.namespaces.svr.AuftragsManagerSoap;
+
+import org.openide.util.Exceptions;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -38,8 +43,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 
 import java.net.URL;
+
+import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,12 +63,6 @@ import java.util.zip.GZIPOutputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 /*
  * To change this template, choose Tools | Templates
@@ -235,19 +237,17 @@ public class NASProductGenerator {
                 intersectNodes.item(i).removeChild(oldPolygonNode);
                 intersectNodes.item(i).appendChild(importedNode);
             }
-            // Use a Transformer for output
-            final TransformerFactory tFactory = TransformerFactory.newInstance();
-            final Transformer transformer = tFactory.newTransformer();
-
-            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            final DOMSource source = new DOMSource(doc);
-            final StreamResult result = new StreamResult(outputStream);
-            transformer.transform(source, result);
+            final OutputFormat format = new OutputFormat(doc);
+            // as a String
+            final StringWriter stringOut = new StringWriter();
+            final XMLSerializer serial = new XMLSerializer(stringOut,
+                    format);
+            serial.serialize(doc);
             if (log.isDebugEnabled()) {
-                log.debug(outputStream.toString());
+                log.debug(stringOut.toString());
             }
             // set the request id that is shown in the 3A Auftagsmanagement Interface
-            String request = outputStream.toString();
+            String request = stringOut.toString();
             request = request.replaceAll(REQUEST_PLACE_HOLDER, requestName);
             return new ByteArrayInputStream(request.getBytes());
         } catch (ParserConfigurationException ex) {
@@ -256,11 +256,12 @@ public class NASProductGenerator {
             log.error("Error during parsing document", ex);
         } catch (IOException ex) {
             log.error("Error while openeing nas template file", ex);
-        } catch (TransformerConfigurationException ex) {
-            log.error("Error writing adopted nas template file", ex);
-        } catch (TransformerException ex) {
-            log.error("Error writing adopted nas template file", ex);
         }
+//        catch (TransformerConfigurationException ex) {
+//            log.error("Error writing adopted nas template file", ex);
+//        } catch (TransformerException ex) {
+//            log.error("Error writing adopted nas template file", ex);
+//        }
         return null;
     }
 
@@ -278,56 +279,68 @@ public class NASProductGenerator {
             final Geometry geom,
             final User user,
             final String requestId) {
-        InputStream templateFile = null;
-
         try {
-            if (template == NasProductTemplate.KOMPLETT) {
-                templateFile = NASProductGenerator.class.getResourceAsStream(
-                        "A_komplett.xml");
-            } else if (template == NasProductTemplate.OHNE_EIGENTUEMER) {
-                templateFile = NASProductGenerator.class.getResourceAsStream(
-                        "A_o_eigentuemer.xml");
-            } else {
-                templateFile = NASProductGenerator.class.getResourceAsStream(
-                        "A_points.xml");
+            InputStream templateFile = null;
+
+            try {
+                if (template == NasProductTemplate.KOMPLETT) {
+                    templateFile = NASProductGenerator.class.getResourceAsStream(
+                            "A_komplett.xml");
+                } else if (template == NasProductTemplate.OHNE_EIGENTUEMER) {
+                    templateFile = NASProductGenerator.class.getResourceAsStream(
+                            "A_o_eigentuemer.xml");
+                } else {
+                    templateFile = NASProductGenerator.class.getResourceAsStream(
+                            "A_points.xml");
+                }
+            } catch (Exception ex) {
+                log.fatal("ka", ex);
             }
-        } catch (Exception ex) {
-            log.fatal("ka", ex);
+            if (geom == null) {
+                log.error("geometry is null, cannot execute nas query");
+                return null;
+            }
+
+            final String requestName = getRequestName(user, requestId);
+            final InputStream preparedQuery = generateQeury(geom, templateFile, requestName);
+            initAmManager();
+            final int sessionID = manager.login(USER, PW);
+            final String orderId = manager.registerGZip(sessionID, gZipFile(preparedQuery));
+
+            addToOpenOrders(determineUserPrefix(user), orderId);
+            addToUndeliveredOrders(determineUserPrefix(user), orderId);
+
+            final NasProductDownloader downloader = new NasProductDownloader(determineUserPrefix(user), orderId);
+            downloaderMap.put(orderId, downloader);
+            final Thread workerThread = new Thread(downloader);
+            workerThread.start();
+
+            return orderId;
+        } catch (RemoteException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        if (geom == null) {
-            log.error("geometry is null, cannot execute nas query");
-            return null;
-        }
-
-        initAmManager();
-        final String requestName = getRequestName(user, requestId);
-        final InputStream preparedQuery = generateQeury(geom, templateFile, requestName);
-        final int sessionID = manager.login(USER, PW);
-        final String orderId = manager.registerGZip(sessionID, gZipFile(preparedQuery));
-
-        addToOpenOrders(determineUserPrefix(user), orderId);
-        addToUndeliveredOrders(determineUserPrefix(user), orderId);
-
-        final NasProductDownloader downloader = new NasProductDownloader(determineUserPrefix(user), orderId);
-        downloaderMap.put(orderId, downloader);
-        final Thread workerThread = new Thread(downloader);
-        workerThread.start();
-
-        return orderId;
+        return null;
     }
 
     /**
      * DOCUMENT ME!
      */
     private void initAmManager() {
-        final AuftragsManager am;
+//        final AuftragsManager am;
         try {
-            am = new AuftragsManager(new URL(SERVICE_URL));
+//            am = new AuftragsManager(new URL(SERVICE_URL));
+//            am = new AuftragsManagerSoapImpl();
         } catch (Exception ex) {
             log.error("error creating 3AServer interface", ex);
             return;
         }
-        manager = am.getAuftragsManagerSoap();
+        try {
+//            manager = am.getAuftragsManagerSoap();
+            final AuftragsManagerLocator am = new AuftragsManagerLocator();
+            manager = am.getAuftragsManagerSoap(new URL(SERVICE_URL));
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     /**
@@ -379,8 +392,10 @@ public class NASProductGenerator {
     public void cancelOrder(final String orderId, final User user) {
         final String userKey = determineUserPrefix(user);
         final NasProductDownloader downloader = downloaderMap.get(orderId);
-        downloader.setInterrupted(true);
-        downloaderMap.remove(orderId);
+        if (downloader != null) {
+            downloader.setInterrupted(true);
+            downloaderMap.remove(orderId);
+        }
         removeFromOpenOrders(userKey, orderId);
         removeFromUndeliveredOrders(userKey, orderId);
         deleteFileIfExists(orderId, user);
@@ -713,36 +728,49 @@ public class NASProductGenerator {
 
         @Override
         public void run() {
-            initAmManager();
-            final int sessionId = manager.login(USER, PW);
-            final Timer t = new Timer();
-            t.scheduleAtFixedRate(new TimerTask() {
+            try {
+                initAmManager();
+                final int sessionId = manager.login(USER, PW);
+                final Timer t = new Timer();
+                t.scheduleAtFixedRate(new TimerTask() {
 
-                    @Override
-                    public void run() {
-                        if (interrupted) {
-                            log.info(
-                                "interrupting the dowload of nas order "
-                                        + orderId);
-                            t.cancel();
-                            return;
+                        @Override
+                        public void run() {
+//                        AMAuftragServer amServer = null;
+                            AM_AuftragServer amServer = null;
+                            try {
+                                if (interrupted) {
+                                    log.info(
+                                        "interrupting the dowload of nas order "
+                                                + orderId);
+                                    t.cancel();
+                                    return;
+                                }
+                                amServer = manager.listAuftrag(sessionId, orderId);
+                                if (amServer.getWannBeendet() == null) {
+                                    return;
+                                }
+                                t.cancel();
+                                logProtocol(manager.getProtocolGZip(sessionId, orderId));
+                                if (!interrupted) {
+                                    unzipAndSaveFile(userId, orderId, manager.getResultGZip(sessionId, orderId));
+                                    removeFromOpenOrders(userId, orderId);
+                                    downloaderMap.remove(orderId);
+                                } else {
+                                    log.info(
+                                        "interrupting the dowload of nas order "
+                                                + orderId);
+                                }
+                            } catch (RemoteException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } finally {
+//                                amServer.close();
+                            }
                         }
-                        final AMAuftragServer amServer = manager.listAuftrag(sessionId, orderId);
-                        if (amServer.getWannBeendet() == null) {
-                            return;
-                        }
-                        t.cancel();
-                        logProtocol(manager.getProtocolGZip(sessionId, orderId));
-                        if (!interrupted) {
-                            unzipAndSaveFile(userId, orderId, manager.getResultGZip(sessionId, orderId));
-                            removeFromOpenOrders(userId, orderId);
-                        } else {
-                            log.info(
-                                "interrupting the dowload of nas order "
-                                        + orderId);
-                        }
-                    }
-                }, REQUEST_PERIOD, REQUEST_PERIOD);
+                    }, REQUEST_PERIOD, REQUEST_PERIOD);
+            } catch (RemoteException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         /**

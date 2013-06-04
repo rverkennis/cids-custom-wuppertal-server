@@ -11,9 +11,10 @@
  */
 package de.cismet.cids.custom.utils.nas;
 
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
+import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
+
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
 
 import org.openide.util.Exceptions;
 
@@ -24,7 +25,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 
@@ -33,14 +33,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 /**
  * DOCUMENT ME!
@@ -54,7 +46,6 @@ public class GML3Writer {
 
 // static final String SCHEMA_LOCATION_ATTRIBUTE =
 // "http://www.opengis.net/gml http://schemas.opengis.net/gml/3.2.1/base/gml.xsd";
-
     /**
      * DOCUMENT ME!
      *
@@ -92,7 +83,6 @@ public class GML3Writer {
 // }
 // return res.toString();
 // }
-
     /**
      * DOCUMENT ME!
      *
@@ -140,14 +130,21 @@ public class GML3Writer {
                 newNode.setTextContent(poslistCoords.toString());
                 linearRingNodes.item(i).appendChild(newNode);
             }
-            final TransformerFactory tFactory = TransformerFactory.newInstance();
-            final Transformer transformer = tFactory.newTransformer();
+//            final TransformerFactory tFactory = TransformerFactory.newInstance();
+//            final Transformer transformer = tFactory.newTransformer();
 
-            final ByteArrayOutputStream os = new ByteArrayOutputStream();
-            final DOMSource source = new DOMSource(doc);
-            final StreamResult result = new StreamResult(os);
-            transformer.transform(source, result);
-            rawXML = os.toString();
+//            final ByteArrayOutputStream os = new ByteArrayOutputStream();
+//            final DOMSource source = new DOMSource(doc);
+//            final StreamResult result = new StreamResult(os);
+//            transformer.transform(source, result);
+            final OutputFormat format = new OutputFormat(doc);
+            // as a String
+            final StringWriter stringOut = new StringWriter();
+            final XMLSerializer serial = new XMLSerializer(stringOut,
+                    format);
+            serial.serialize(doc);
+//            rawXML = os.toString();
+            rawXML = stringOut.toString();
         } catch (JAXBException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ParserConfigurationException ex) {
@@ -156,9 +153,13 @@ public class GML3Writer {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (TransformerConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (TransformerException ex) {
+        }
+//        catch (TransformerConfigurationException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } catch (TransformerException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+        catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         // remove the xml doc elem
