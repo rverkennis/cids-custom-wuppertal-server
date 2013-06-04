@@ -13,11 +13,8 @@ package de.cismet.cids.custom.wunda_blau.search.actions;
 
 import Sirius.server.newuser.User;
 
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import de.cismet.cids.custom.utils.nas.NASProductGenerator;
 import de.cismet.cids.custom.utils.nas.NasProductTemplate;

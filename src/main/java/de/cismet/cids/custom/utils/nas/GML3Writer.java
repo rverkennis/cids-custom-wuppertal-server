@@ -36,7 +36,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
- * DOCUMENT ME!
+ * This class provides an easy way to convert JTS Geometry Collections into an xml representation that is suited to 
+ * the 3A Server interface used in for NAS-queries
  *
  * @author   daniel
  * @version  $Revision$, $Date$
@@ -45,45 +46,6 @@ public class GML3Writer {
 
     //~ Methods ----------------------------------------------------------------
 
-// static final String SCHEMA_LOCATION_ATTRIBUTE =
-// "http://www.opengis.net/gml http://schemas.opengis.net/gml/3.2.1/base/gml.xsd";
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   geometries   DOCUMENT ME!
-     * @param   crs          DOCUMENT ME!
-     * @param   srsNameProp  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-// private static String convertToGMLWithDeegree(final com.vividsolutions.jts.geom.Geometry geometry,
-// final String crs,
-// final String srsNameProp) {
-// // transform to fix CRS ETRS89-UTM32
-// CrsTransformer.transformToGivenCrs(geometry, crs);
-// final StringBuilder res = new StringBuilder();
-// try {
-// final StringWriter sw = new StringWriter();
-// final XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newFactory();
-// final XMLStreamWriter xmlStreamWriter = xmlOutputFactory.createXMLStreamWriter(sw);
-// final GMLStreamWriter w = GMLOutputFactory.createGMLStreamWriter(GMLVersion.GML_32, xmlStreamWriter);
-// final GML3GeometryWriter gmlWriter = new GML3GeometryWriter(w);
-// final WKTWriter wktWriter = new WKTWriter();
-// final String wktGeom = wktWriter.write(geometry);
-// // use a static ICRS of deegree, since it does not affect
-// final WKTReader reader = new WKTReader(GeographicCRS.WGS84_YX);
-// gmlWriter.export(reader.read(wktGeom));
-// xmlStreamWriter.flush();
-// xmlStreamWriter.close();
-// String foo = sw.toString();
-// foo = foo.replaceAll("xmlns:gml=\"http://www.opengis.net/gml/3.2\"", "");
-// foo = foo.replaceAll("srsName=\"EPSG:4326\"", "srsName=\"" + srsNameProp + "\"");
-// res.append(foo);
-// } catch (Exception ex) {
-// Exceptions.printStackTrace(ex);
-// }
-// return res.toString();
-// }
     /**
      * DOCUMENT ME!
      *
@@ -194,9 +156,7 @@ public class GML3Writer {
      * @return  DOCUMENT ME!
      */
     public static String writeGML3_2WithETRS89(final GeometryCollection geometries) {
-//        return convertToGML(geometry, "EPSG:25832", "urn:adv:crs:ETRS89_UTM32");
         final String confluence = convertToGML(geometries, "EPSG:25832", "urn:adv:crs:ETRS89_UTM32");
-//        final String deegree = convertToGMLWithDeegree(geometry, "EPSG:25832", "urn:adv:crs:ETRS89_UTM32");
         return confluence;
     }
 }

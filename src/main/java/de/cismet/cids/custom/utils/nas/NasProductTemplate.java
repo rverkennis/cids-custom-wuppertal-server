@@ -12,7 +12,7 @@
 package de.cismet.cids.custom.utils.nas;
 
 /**
- * DOCUMENT ME!
+ * Enumeration that defines the different NAS Templates
  *
  * @author   daniel
  * @version  $Revision$, $Date$

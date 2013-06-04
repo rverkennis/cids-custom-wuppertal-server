@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 
 import de.aed_sicad.www.namespaces.svr.AM_AuftragServer;
@@ -267,11 +266,6 @@ public class NASProductGenerator {
         } catch (IOException ex) {
             log.error("Error while openeing nas template file", ex);
         }
-//        catch (TransformerConfigurationException ex) {
-//            log.error("Error writing adopted nas template file", ex);
-//        } catch (TransformerException ex) {
-//            log.error("Error writing adopted nas template file", ex);
-//        }
         return null;
     }
 
@@ -327,7 +321,7 @@ public class NASProductGenerator {
 
             return orderId;
         } catch (RemoteException ex) {
-            Exceptions.printStackTrace(ex);
+            log.error("could not create conenction to 3A Server",ex);
         }
         return null;
     }
@@ -336,19 +330,11 @@ public class NASProductGenerator {
      * DOCUMENT ME!
      */
     private void initAmManager() {
-//        final AuftragsManager am;
         try {
-//            am = new AuftragsManager(new URL(SERVICE_URL));
-//            am = new AuftragsManagerSoapImpl();
-        } catch (Exception ex) {
-            log.error("error creating 3AServer interface", ex);
-            return;
-        }
-        try {
-//            manager = am.getAuftragsManagerSoap();
             final AuftragsManagerLocator am = new AuftragsManagerLocator();
             manager = am.getAuftragsManagerSoap(new URL(SERVICE_URL));
         } catch (Exception ex) {
+            log.error("error creating 3AServer interface", ex);
             Exceptions.printStackTrace(ex);
         }
     }
@@ -709,7 +695,7 @@ public class NASProductGenerator {
     //~ Inner Classes ----------------------------------------------------------
 
     /**
-     * DOCUMENT ME!
+     * NasProductDownloader checks at a fixed rate if the nas order is completed in the 3A order management system
      *
      * @version  $Revision$, $Date$
      */
@@ -773,13 +759,11 @@ public class NASProductGenerator {
                                 }
                             } catch (RemoteException ex) {
                                 Exceptions.printStackTrace(ex);
-                            } finally {
-//                                amServer.close();
-                            }
+                            } 
                         }
                     }, REQUEST_PERIOD, REQUEST_PERIOD);
             } catch (RemoteException ex) {
-                Exceptions.printStackTrace(ex);
+                log.error("Could not connect to 3A server", ex);
             }
         }
 
