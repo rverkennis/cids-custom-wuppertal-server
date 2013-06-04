@@ -115,8 +115,8 @@ public class GML3Writer {
             final Document doc = dBuilder.parse(is);
 
             final NodeList linearRingNodes = doc.getElementsByTagName("gml:LinearRing");
-            final StringBuilder poslistCoords = new StringBuilder();
             for (int i = 0; i < linearRingNodes.getLength(); i++) {
+                final StringBuilder poslistCoords = new StringBuilder();
                 Node child = linearRingNodes.item(i).getFirstChild();
                 while (child != null) {
                     if (child.getNodeName().equals("gml:pos")) {
