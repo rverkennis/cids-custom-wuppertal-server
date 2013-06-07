@@ -21,21 +21,24 @@ public enum NasProductTemplate {
 
     //~ Enum constants ---------------------------------------------------------
 
-    KOMPLETT("Komplett"), OHNE_EIGENTUEMER("ohne Eigentuemer"), POINTS("nur Punkte");
+    KOMPLETT("Komplett", "naskom"), OHNE_EIGENTUEMER("ohne Eigentuemer", "nasoeig"), POINTS("nur Punkte", "pktlsttxt");
 
     //~ Instance fields --------------------------------------------------------
 
     private final String displayText;
+    private final String billingKey;
 
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new ProductTemplate object.
      *
-     * @param  s  DOCUMENT ME!
+     * @param  s           DOCUMENT ME!
+     * @param  billingKey  DOCUMENT ME!
      */
-    private NasProductTemplate(final String s) {
+    private NasProductTemplate(final String s, final String billingKey) {
         displayText = s;
+        this.billingKey = billingKey;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -47,6 +50,15 @@ public enum NasProductTemplate {
      */
     public String getDisplayText() {
         return displayText;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getBillingKey() {
+        return billingKey;
     }
 
     @Override
