@@ -21,7 +21,7 @@ public enum NasProductTemplate {
 
     //~ Enum constants ---------------------------------------------------------
 
-    KOMPLETT("Komplett", "naskom"), OHNE_EIGENTUEMER("ohne Eigentuemer", "nasoeig"), POINTS("nur Punkte", "pktlsttxt");
+    KOMPLETT("Komplett", "naskom"), OHNE_EIGENTUEMER("ohne Eigentuemer", "nasoeig"), POINTS("nur Punkte", "naspkt");
 
     //~ Instance fields --------------------------------------------------------
 
