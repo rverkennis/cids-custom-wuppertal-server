@@ -17,7 +17,7 @@ package de.cismet.cids.custom.utils.butler;
  * @author   daniel
  * @version  $Revision$, $Date$
  */
-class ButlerResolution {
+public class ButlerResolution {
 
     //~ Instance fields --------------------------------------------------------
 
