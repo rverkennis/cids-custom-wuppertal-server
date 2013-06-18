@@ -17,14 +17,12 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.Exceptions;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 /**
  * DOCUMENT ME!
@@ -94,7 +91,8 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param   user        boundingBox DOCUMENT ME!
+     * @param   requestId   DOCUMENT ME!
+     * @param   user        DOCUMENT ME!
      * @param   productId   DOCUMENT ME!
      * @param   minX        DOCUMENT ME!
      * @param   minY        DOCUMENT ME!
@@ -105,9 +103,10 @@ public class ButlerProductGenerator {
      * @param   isGeoTiff   DOCUMENT ME!
      * @param   format      DOCUMENT ME!
      *
-     * @return  DOCUMENT ME!
+     * @return  the requestId
      */
-    private ArrayList<byte[]> createButlerRequest(final User user,
+    public String createButlerRequest(final String requestId,
+            final User user,
             final String productId,
             final double minX,
             final double minY,
@@ -120,7 +119,7 @@ public class ButlerProductGenerator {
         if (!initError) {
             File reqeustFile = null;
             FileWriter fw = null;
-            final String filename = determineRequestFileName(user);
+            final String filename = determineRequestFileName(user, requestId);
             try {
                 reqeustFile = new File(requestFolder + System.getProperty("file.separator") + filename
                                 + FILE_APPENDIX);
@@ -133,6 +132,7 @@ public class ButlerProductGenerator {
                 final BufferedWriter bw = new BufferedWriter(fw);
                 bw.write(getRequestLine(productId, minX, minY, maxX, maxY, colorDepth, resolution, isGeoTiff, format));
                 bw.close();
+                return filename;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
@@ -142,23 +142,53 @@ public class ButlerProductGenerator {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            // check in a loop if the file still exists, if not look for the result...
-            if (reqeustFile == null) {
-                LOG.error("the butler request file can not be null - stoped any further computation");
-                return null;
-            }
-            while (reqeustFile.exists()) {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-
-            final ArrayList<byte[]> results = getResultFiles(filename, isGeoTiff, format);
-            return results;
         }
         return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   requestId  fileName DOCUMENT ME!
+     * @param   format     must be one of the following "dxf", "shp","tif"
+     *
+     * @return  An ArrayList of bytes representing the result Files null if there are no result files
+     */
+    public ArrayList<byte[]> getResultForRequest(final String requestId, final String format) {
+        File resultDir;
+        if (format.equals("dxf")) {
+            resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + dxfResultDir);
+        } else if (format.equals("shp")) {
+            resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + shapeResultDir);
+        } else if (format.equals("tif")) {
+            resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + tifResultDir);
+        } else {
+            // this must be true here: format.equals("pdf")
+            resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + pdfResultDir);
+        }
+
+        // get a list of files with the respective fileName and read them all
+        final String regex = (requestId + ".*").replaceAll("\\+", "\\\\\\+");
+        final File[] resultFiles = resultDir.listFiles(new FileFilter() {
+
+                    @Override
+                    public boolean accept(final File file) {
+                        return file.getName().matches(regex);
+                    }
+                });
+        // if there the list is emtpy the butler service hasnt finished the request
+        if ((resultFiles == null) || (resultFiles.length <= 0)) {
+            LOG.info("could not find the result file for butler order " + requestId
+                        + ". Maybe the server side processing isn't finished");
+            return null;
+        }
+
+        final ArrayList<byte[]> result = new ArrayList<byte[]>();
+        for (int i = 0; i < resultFiles.length; i++) {
+            result.add(loadFile(resultFiles[i]));
+        }
+
+        return result;
     }
 
     /**
@@ -202,15 +232,16 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param   user  DOCUMENT ME!
+     * @param   user       DOCUMENT ME!
+     * @param   requestId  DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
      */
-    private String determineRequestFileName(final User user) {
+    private String determineRequestFileName(final User user, final String requestId) {
         final GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(new Date());
 
-        return user.getName() + "_" + cal.get(GregorianCalendar.HOUR_OF_DAY)
+        return user.getName() + "_" + requestId + "_" + cal.get(GregorianCalendar.HOUR_OF_DAY)
                     + "+" + cal.get(GregorianCalendar.MINUTE)
                     + "+" + cal.get(GregorianCalendar.SECOND);
     }
@@ -244,8 +275,7 @@ public class ButlerProductGenerator {
         // product id
         buffer.append(productId);
         buffer.append(SEPERATOR);
-//        if (boundingBox instanceof Recta) {
-//        }
+
         // coordinates
         buffer.append(minX);
         buffer.append(SEPERATOR);
@@ -275,83 +305,6 @@ public class ButlerProductGenerator {
         // format
         buffer.append(format);
         return buffer.toString();
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param  args  DOCUMENT ME!
-     */
-    public static void main(final String[] args) {
-        final ButlerProductGenerator generator = ButlerProductGenerator.getInstance();
-        final User user = new User(100, "admin", "wunda_blau");
-        final String productId = "0404";
-        final double minX = 370000d;
-        final double minY = 5680000d;
-        final double maxX = 370300d;
-        final double maxY = 5680300d;
-        final int colorDepth = 8;
-        final String resolution = "0.50";
-        final boolean useGeoTif = true;
-        final String format = "tif";
-        final ArrayList<byte[]> result = generator.createButlerRequest(
-            user,
-            productId,
-            minX,
-            minY,
-            maxX,
-            maxY,
-            colorDepth,
-            resolution,
-            useGeoTif,
-            format);
-        
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param   fileName  DOCUMENT ME!
-     * @param   geoTiff   DOCUMENT ME!
-     * @param   format    DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
-    private ArrayList<byte[]> getResultFiles(final String fileName, final boolean geoTiff, final String format) {
-        final ArrayList<byte[]> result = new ArrayList<byte[]>();
-        File resultDir;
-        if (format.equals("dxf")) {
-            resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + dxfResultDir);
-        } else if (format.equals("shp")) {
-            resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + shapeResultDir);
-        } else if (format.equals("tif")) {
-            resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + tifResultDir);
-        } else {
-            // this must be true here: format.equals("pdf")
-            resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + pdfResultDir);
-        }
-
-        // get a list of files with the respective fileName and read them all
-        final String regex = (fileName + ".*").replaceAll("\\+", "\\\\\\+");
-//        final Pattern p = Pattern.compile(regex);
-//        p.quote("+");
-        final File[] resultFiles = resultDir.listFiles(new FileFilter() {
-
-                    @Override
-                    public boolean accept(final File file) {
-                        return file.getName().matches(regex);
-//                        retursn p.matcher(file.getName()).matches();
-                    }
-                });
-        // we assume that there is at least one file
-        if ((resultFiles == null) || (resultFiles.length <= 0)) {
-            LOG.error("could not find the result file for butler order " + fileName);
-        }
-        for (int i = 0; i < resultFiles.length; i++) {
-            result.add(loadFile(resultFiles[i]));
-        }
-
-        return result;
     }
 
     /**
@@ -387,5 +340,51 @@ public class ButlerProductGenerator {
             }
         }
         return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  args  DOCUMENT ME!
+     */
+    public static void main(final String[] args) {
+        final ButlerProductGenerator generator = ButlerProductGenerator.getInstance();
+        final User user = new User(100, "admin", "wunda_blau");
+        final String productId = "0404";
+        final double minX = 370000d;
+        final double minY = 5680000d;
+        final double maxX = 370300d;
+        final double maxY = 5680300d;
+        final int colorDepth = 8;
+        final String resolution = "0.50";
+        final boolean useGeoTif = true;
+        final String format = "tif";
+        System.out.println("Sending request to butler");
+        final String requestId = generator.createButlerRequest(
+                "cismet_test",
+                user,
+                productId,
+                minX,
+                minY,
+                maxX,
+                maxY,
+                colorDepth,
+                resolution,
+                useGeoTif,
+                format);
+        System.out.println("Sent request, Received request id " + requestId + " for result polling");
+        System.out.println("Polling result for request id " + requestId);
+        ArrayList<byte[]> files = generator.getResultForRequest(requestId, format);
+        while (files == null) {
+            System.out.println("Requesting results for " + requestId + " is not finished, try later again");
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            files = generator.getResultForRequest(requestId, format);
+        }
+
+        System.out.println("Received " + files.size() + " Files from butler server");
     }
 }
