@@ -1,12 +1,10 @@
-/**
- * *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- * 
-* ... and it just works.
- * 
-***************************************************
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -37,12 +35,13 @@ import java.util.Properties;
 /**
  * DOCUMENT ME!
  *
- * @author daniel
- * @version $Revision$, $Date$
+ * @author   daniel
+ * @version  $Revision$, $Date$
  */
 public class ButlerProductGenerator {
 
     //~ Static fields/initializers ---------------------------------------------
+
     private static final ButlerProductGenerator instance = new ButlerProductGenerator();
     private static final Logger LOG = Logger.getLogger(ButlerProductGenerator.class);
     private static final String pdfResultDir = "pdf";
@@ -51,16 +50,19 @@ public class ButlerProductGenerator {
     private static final String shapeResultDir = "shape";
     private static final String FILE_APPENDIX = ".but";
     private static final String SEPERATOR = ";";
+
     //~ Instance fields --------------------------------------------------------
+
     private final String requestFolder;
     private final String resultBaseFolder;
     private boolean initError = false;
 
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new ButlerProductGenerator object.
      *
-     * @throws RuntimeException DOCUMENT ME!
+     * @throws  RuntimeException  DOCUMENT ME!
      */
     private ButlerProductGenerator() {
         try {
@@ -76,10 +78,11 @@ public class ButlerProductGenerator {
     }
 
     //~ Methods ----------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     public static ButlerProductGenerator getInstance() {
         return instance;
@@ -88,20 +91,21 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param orderNumber DOCUMENT ME!
-     * @param user that sends the request
-     * @param productId of the product that shall be generated
-     * @param minX lower x coordinate of the rectangle the product is generated for
-     * @param minY lower y coordinate of the rectangle the product is generated for
-     * @param maxX upper x coordinate of the rectangle the product is generated for
-     * @param maxY lower y coordinate of the rectangle the product is generated for
-     * @param colorDepth of the product that shall be generated
-     * @param resolution of the product that shall be generated
-     * @param isGeoTiff default no, set only to true if </code>format.equals("tif")</code> and the output file should end with *.geotiff instead of *.tif
-     * @param format one of the following <code>"dxf"</code>, <code>"tif"</code>, <code>"shp"</code>
+     * @param   orderNumber  DOCUMENT ME!
+     * @param   user         that sends the request
+     * @param   productId    of the product that shall be generated
+     * @param   minX         lower x coordinate of the rectangle the product is generated for
+     * @param   minY         lower y coordinate of the rectangle the product is generated for
+     * @param   maxX         upper x coordinate of the rectangle the product is generated for
+     * @param   maxY         lower y coordinate of the rectangle the product is generated for
+     * @param   colorDepth   of the product that shall be generated
+     * @param   resolution   of the product that shall be generated
+     * @param   isGeoTiff    default no, set only to true if <code>format.equals("tif")</code> and the output file
+     *                       should end with *.geotiff instead of *.tif
+     * @param   format       one of the following <code>"dxf"</code>, <code>"tif"</code>, <code>"shp"</code>
      *
-     * @return the requestId necessary to retrive results with
-     * {@link  #getResultForRequest(java.lang.String, java.lang.String)} method
+     * @return  the requestId necessary to retrive results with
+     *          {@link #getResultForRequest(java.lang.String, java.lang.String)} method
      */
     public String createButlerRequest(final String orderNumber,
             final User user,
@@ -120,7 +124,7 @@ public class ButlerProductGenerator {
             final String filename = determineRequestFileName(user, orderNumber);
             try {
                 reqeustFile = new File(requestFolder + System.getProperty("file.separator") + filename
-                        + FILE_APPENDIX);
+                                + FILE_APPENDIX);
                 if (reqeustFile.exists()) {
                     // should not happen;
                     LOG.error("butler 1 request file already exists");
@@ -147,10 +151,10 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param requestId represents the request
-     * @param format must be one of the following "dxf", "shp","tif"
+     * @param   requestId  represents the request
+     * @param   format     must be one of the following "dxf", "shp","tif"
      *
-     * @return A list of bytes representing the result files <code>null</code> if there are no result files
+     * @return  A list of bytes representing the result files <code>null</code> if there are no result files
      */
     public ArrayList<byte[]> getResultForRequest(final String requestId, final String format) {
         File resultDir;
@@ -168,15 +172,16 @@ public class ButlerProductGenerator {
         // get a list of files with the respective fileName and read them all
         final String regex = (requestId + ".*").replaceAll("\\+", "\\\\\\+");
         final File[] resultFiles = resultDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(final File file) {
-                return file.getName().matches(regex);
-            }
-        });
+
+                    @Override
+                    public boolean accept(final File file) {
+                        return file.getName().matches(regex);
+                    }
+                });
         // if there the list is emtpy the butler service hasnt finished the request
         if ((resultFiles == null) || (resultFiles.length <= 0)) {
             LOG.info("could not find the result file for butler order " + requestId
-                    + ". Maybe the server side processing isn't finished");
+                        + ". Maybe the server side processing isn't finished");
             return null;
         }
 
@@ -191,7 +196,7 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @throws RuntimeException DOCUMENT ME!
+     * @throws  RuntimeException  DOCUMENT ME!
      */
     private void checkFolders() {
         final File requestDir = new File(requestFolder);
@@ -219,8 +224,8 @@ public class ButlerProductGenerator {
         }
 
         if (!(pdfDir.isDirectory() && pdfDir.canExecute() && dxfDir.isDirectory() && dxfDir.canExecute()
-                && tifDir.isDirectory() && tifDir.canExecute()
-                && shapeDir.isDirectory() && shapeDir.canExecute())) {
+                        && tifDir.isDirectory() && tifDir.canExecute()
+                        && shapeDir.isDirectory() && shapeDir.canExecute())) {
             LOG.fatal("can not write to one ore all of butler result directories");
             initError = true;
         }
@@ -229,34 +234,34 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param user DOCUMENT ME!
-     * @param requestId DOCUMENT ME!
+     * @param   user       DOCUMENT ME!
+     * @param   requestId  DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private String determineRequestFileName(final User user, final String requestId) {
         final GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(new Date());
 
         return user.getName() + "_" + requestId + "_" + cal.get(GregorianCalendar.HOUR_OF_DAY)
-                + "+" + cal.get(GregorianCalendar.MINUTE)
-                + "+" + cal.get(GregorianCalendar.SECOND);
+                    + "+" + cal.get(GregorianCalendar.MINUTE)
+                    + "+" + cal.get(GregorianCalendar.SECOND);
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param productId DOCUMENT ME!
-     * @param minX DOCUMENT ME!
-     * @param minY DOCUMENT ME!
-     * @param maxX DOCUMENT ME!
-     * @param maxY DOCUMENT ME!
-     * @param colorDepth DOCUMENT ME!
-     * @param resolution DOCUMENT ME!
-     * @param geoTiff DOCUMENT ME!
-     * @param format DOCUMENT ME!
+     * @param   productId   DOCUMENT ME!
+     * @param   minX        DOCUMENT ME!
+     * @param   minY        DOCUMENT ME!
+     * @param   maxX        DOCUMENT ME!
+     * @param   maxY        DOCUMENT ME!
+     * @param   colorDepth  DOCUMENT ME!
+     * @param   resolution  DOCUMENT ME!
+     * @param   geoTiff     DOCUMENT ME!
+     * @param   format      DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private String getRequestLine(final String productId,
             final double minX,
@@ -307,9 +312,9 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param f userKey DOCUMENT ME!
+     * @param   f  userKey DOCUMENT ME!
      *
-     * @return DOCUMENT ME!
+     * @return  DOCUMENT ME!
      */
     private byte[] loadFile(final File f) {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -342,7 +347,7 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param args DOCUMENT ME!
+     * @param  args  DOCUMENT ME!
      */
     public static void main(final String[] args) {
         final ButlerProductGenerator generator = ButlerProductGenerator.getInstance();
