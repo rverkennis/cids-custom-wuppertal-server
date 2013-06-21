@@ -11,13 +11,15 @@
  */
 package de.cismet.cids.custom.utils.butler;
 
+import java.io.Serializable;
+
 /**
  * DOCUMENT ME!
  *
  * @author   daniel
  * @version  $Revision$, $Date$
  */
-public class ButlerResolution {
+public class ButlerResolution implements Serializable {
 
     //~ Instance fields --------------------------------------------------------
 
