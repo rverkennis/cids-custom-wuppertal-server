@@ -1,12 +1,10 @@
-/**
- * *************************************************
- *
- * cismet GmbH, Saarbruecken, Germany
- * 
-* ... and it just works.
- * 
-***************************************************
- */
+/***************************************************
+*
+* cismet GmbH, Saarbruecken, Germany
+*
+*              ... and it just works.
+*
+****************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -25,38 +23,44 @@ import de.cismet.cids.server.actions.UserAwareServerAction;
 /**
  * DOCUMENT ME!
  *
- * @author daniel
- * @version $Revision$, $Date$
+ * @author   daniel
+ * @version  $Revision$, $Date$
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerAction.class)
 public class ButlerQueryAction implements UserAwareServerAction {
 
     //~ Enums ------------------------------------------------------------------
+
     /**
      * DOCUMENT ME!
      *
-     * @version $Revision$, $Date$
+     * @version  $Revision$, $Date$
      */
     public enum METHOD_TYPE {
 
         //~ Enum constants -----------------------------------------------------
+
         ADD, GET, GET_ALL, CANCEL
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @version $Revision$, $Date$
+     * @version  $Revision$, $Date$
      */
     public enum PARAMETER_TYPE {
 
         //~ Enum constants -----------------------------------------------------
+
         REQUEST_ID, ORDER_ID, BUTLER_PRODUCT, MIN_X, MIN_Y, MAX_X, MAX_Y, METHOD
     }
+
     //~ Instance fields --------------------------------------------------------
+
     private User user;
 
     //~ Methods ----------------------------------------------------------------
+
     @Override
     public Object execute(final Object body, final ServerActionParameter... params) {
         METHOD_TYPE method = null;
@@ -71,43 +75,44 @@ public class ButlerQueryAction implements UserAwareServerAction {
         for (final ServerActionParameter sap : params) {
             final String sapKey = sap.getKey();
             if (sapKey.equals(PARAMETER_TYPE.ORDER_ID.toString())) {
-                orderId = (String) sap.getValue();
+                orderId = (String)sap.getValue();
             } else if (sapKey.equals(PARAMETER_TYPE.BUTLER_PRODUCT.toString())) {
-                product = (ButlerProduct) sap.getValue();
+                product = (ButlerProduct)sap.getValue();
             } else if (sapKey.equals(PARAMETER_TYPE.MIN_X.toString())) {
-                minX = (Double) sap.getValue();
+                minX = (Double)sap.getValue();
             } else if (sapKey.equals(PARAMETER_TYPE.MIN_Y.toString())) {
-                minY = (Double) sap.getValue();
+                minY = (Double)sap.getValue();
             } else if (sapKey.equals(PARAMETER_TYPE.MAX_X.toString())) {
-                maxX = (Double) sap.getValue();
+                maxX = (Double)sap.getValue();
             } else if (sapKey.equals(PARAMETER_TYPE.MAX_Y.toString())) {
-                maxY = (Double) sap.getValue();
+                maxY = (Double)sap.getValue();
             } else if (sapKey.equals(PARAMETER_TYPE.METHOD.toString())) {
-                method = (METHOD_TYPE) sap.getValue();
+                method = (METHOD_TYPE)sap.getValue();
             } else if (sapKey.equals(PARAMETER_TYPE.REQUEST_ID.toString())) {
-                requestId = (String) sap.getValue();
+                requestId = (String)sap.getValue();
             }
         }
 
         if (method == METHOD_TYPE.ADD) {
-            if (product != null && product.getKey() != null) {
+            if ((product != null) && (product.getKey() != null)) {
                 return ButlerProductGenerator.getInstance()
-                        .createButlerRequest(
-                        orderId,
-                        user,
-                        product.getKey(),
-                        minX,
-                        minY,
-                        maxX,
-                        maxY,
-                        product.getColorDepth(),
-                        product.getResolution().getKey(),
-                        true,
-                        product.getFormat().getKey());
+                            .createButlerRequest(
+                                orderId,
+                                user,
+                                product.getKey(),
+                                minX,
+                                minY,
+                                maxX,
+                                maxY,
+                                product.getColorDepth(),
+                                product.getResolution().getKey(),
+                                true,
+                                product.getFormat().getKey());
             }
         } else if (method == METHOD_TYPE.GET) {
-            if (product != null && product.getFormat() != null) {
-                return ButlerProductGenerator.getInstance().getResultForRequest(requestId, product.getFormat().getKey());
+            if ((product != null) && (product.getFormat() != null)) {
+                return ButlerProductGenerator.getInstance()
+                            .getResultForRequest(requestId, product.getFormat().getKey());
             }
         }
 
