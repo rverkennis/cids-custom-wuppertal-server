@@ -17,11 +17,12 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryCollection;
 
-import de.aed_sicad.www.namespaces.svr.AM_AuftragServer;
-import de.aed_sicad.www.namespaces.svr.AuftragsManagerLocator;
-import de.aed_sicad.www.namespaces.svr.AuftragsManagerSoap;
+import de.aed_sicad.namespaces.svr.AMAuftragServer;
+import de.aed_sicad.namespaces.svr.AuftragsManager;
+import de.aed_sicad.namespaces.svr.AuftragsManagerSoap;
 
 import org.openide.util.Exceptions;
 
@@ -45,6 +46,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.rmi.RemoteException;
@@ -59,6 +61,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -82,6 +86,8 @@ public class NASProductGenerator {
     private static NASProductGenerator instance;
     private static final int REQUEST_PERIOD = 3000;
     private static final String REQUEST_PLACE_HOLDER = "REQUEST-ID";
+    private static final String DATA_FORMAT_STD = "<datenformat>1000</datenformat>";
+    private static final String DATA_FORMAT_500 = "<datenformat>NAS_500m</datenformat>";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -252,12 +258,22 @@ public class NASProductGenerator {
             final XMLSerializer serial = new XMLSerializer(stringOut,
                     format);
             serial.serialize(doc);
-            if (log.isDebugEnabled()) {
-                log.debug(stringOut.toString());
-            }
+
             // set the request id that is shown in the 3A Auftagsmanagement Interface
             String request = stringOut.toString();
             request = request.replaceAll(REQUEST_PLACE_HOLDER, requestName);
+
+            // check if this request needs to be portioned
+            final Envelope env = geom.getEnvelopeInternal();
+            final double xSize = env.getMaxX() - env.getMinX();
+            final double ySize = env.getMaxY() - env.getMinY();
+
+            if ((xSize > 500) && (ySize > 500)) {
+                request = request.replaceAll(DATA_FORMAT_STD, DATA_FORMAT_500);
+            }
+            if (log.isDebugEnabled()) {
+                log.debug(request);
+            }
             return new ByteArrayInputStream(request.getBytes());
         } catch (ParserConfigurationException ex) {
             log.error("Parser Configuration Error", ex);
@@ -283,60 +299,68 @@ public class NASProductGenerator {
             final GeometryCollection geoms,
             final User user,
             final String requestId) {
+//        try {
+        InputStream templateFile = null;
+
         try {
-            InputStream templateFile = null;
-
-            try {
-                if (template == NasProductTemplate.KOMPLETT) {
-                    templateFile = NASProductGenerator.class.getResourceAsStream(
-                            "A_komplett.xml");
-                } else if (template == NasProductTemplate.OHNE_EIGENTUEMER) {
-                    templateFile = NASProductGenerator.class.getResourceAsStream(
-                            "A_o_eigentuemer.xml");
-                } else {
-                    templateFile = NASProductGenerator.class.getResourceAsStream(
-                            "A_points.xml");
-                }
-            } catch (Exception ex) {
-                log.fatal("ka", ex);
+            if (template == NasProductTemplate.KOMPLETT) {
+                templateFile = NASProductGenerator.class.getResourceAsStream(
+                        "A_komplett.xml");
+            } else if (template == NasProductTemplate.OHNE_EIGENTUEMER) {
+                templateFile = NASProductGenerator.class.getResourceAsStream(
+                        "A_o_eigentuemer.xml");
+            } else {
+                templateFile = NASProductGenerator.class.getResourceAsStream(
+                        "A_points.xml");
             }
-            if (geoms == null) {
-                log.error("geometry is null, cannot execute nas query");
-                return null;
-            }
-
-            final String requestName = getRequestName(user, requestId);
-            final InputStream preparedQuery = generateQeury(geoms, templateFile, requestName);
-            initAmManager();
-            final int sessionID = manager.login(USER, PW);
-            final String orderId = manager.registerGZip(sessionID, gZipFile(preparedQuery));
-
-            addToOpenOrders(determineUserPrefix(user), orderId);
-            addToUndeliveredOrders(determineUserPrefix(user), orderId);
-
-            final NasProductDownloader downloader = new NasProductDownloader(determineUserPrefix(user), orderId);
-            downloaderMap.put(orderId, downloader);
-            final Thread workerThread = new Thread(downloader);
-            workerThread.start();
-
-            return orderId;
-        } catch (RemoteException ex) {
-            log.error("could not create conenction to 3A Server", ex);
+        } catch (Exception ex) {
+            log.fatal("ka", ex);
         }
-        return null;
+        if (geoms == null) {
+            log.error("geometry is null, cannot execute nas query");
+            return null;
+        }
+
+        final String requestName = getRequestName(user, requestId);
+        final InputStream preparedQuery = generateQeury(geoms, templateFile, requestName);
+        initAmManager();
+        final int sessionID = manager.login(USER, PW);
+        final String orderId = manager.registerGZip(sessionID, gZipFile(preparedQuery));
+
+        addToOpenOrders(determineUserPrefix(user), orderId);
+        addToUndeliveredOrders(determineUserPrefix(user), orderId);
+
+        final NasProductDownloader downloader = new NasProductDownloader(determineUserPrefix(user), orderId);
+        downloaderMap.put(orderId, downloader);
+        final Thread workerThread = new Thread(downloader);
+        workerThread.start();
+
+        return orderId;
+//        } catch (RemoteException ex) {
+//            log.error("could not create conenction to 3A Server", ex);
+//        }
+//        return null;
     }
 
     /**
      * DOCUMENT ME!
      */
     private void initAmManager() {
+//        try {
+//            final AuftragsManagerLocator am = new AuftragsManagerLocator();
+//            manager = am.getAuftragsManagerSoap(new URL(SERVICE_URL));
+        final AuftragsManager am;
         try {
-            final AuftragsManagerLocator am = new AuftragsManagerLocator();
-            manager = am.getAuftragsManagerSoap(new URL(SERVICE_URL));
+            am = new AuftragsManager(new URL(SERVICE_URL));
         } catch (Exception ex) {
             log.error("error creating 3AServer interface", ex);
-            Exceptions.printStackTrace(ex);
+            return;
         }
+        manager = am.getAuftragsManagerSoap();
+//        } catch (Exception ex) {
+//            log.error("error creating 3AServer interface", ex);
+//            Exceptions.printStackTrace(ex);
+//        }
     }
 
     /**
@@ -350,9 +374,9 @@ public class NASProductGenerator {
     public byte[] getResultForOrder(final String orderId, final User user) {
         final HashSet<String> openUserOrders = openOrderMap.get(determineUserPrefix(user));
         if ((openUserOrders != null) && openUserOrders.contains(orderId)) {
-            if (log.isDebugEnabled()) {
-                log.debug("requesting an order that isnt not done");
-            }
+//            if (log.isDebugEnabled()) {
+//                log.debug("requesting an order that isnt not done");
+//            }
             return new byte[0];
         }
         final HashSet<String> undeliveredUserOrders = undeliveredOrderMap.get(determineUserPrefix(user));
@@ -475,6 +499,53 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
+     * @param  userKey      DOCUMENT ME!
+     * @param  orderId      DOCUMENT ME!
+     * @param  zippedFiles  DOCUMENT ME!
+     */
+    private void saveZipFileOfUnzippedFileCollection(final String userKey,
+            final String orderId,
+            final ArrayList<byte[]> zippedFiles) {
+        final ArrayList<byte[]> unzippedFileCollection = new ArrayList<byte[]>();
+        for (final byte[] zipFile : zippedFiles) {
+            unzippedFileCollection.add(gunzip(zipFile));
+        }
+        final String filename = determineFileName(userKey, orderId);
+        final File file = new File(filename.replace(FILE_APPENDIX, ".zip"));
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+        FileOutputStream fos = null;
+        ZipOutputStream zos = null;
+        try {
+            fos = new FileOutputStream(file);
+            zos = new ZipOutputStream(fos);
+            for (int i = 0; i < unzippedFileCollection.size(); i++) {
+                final byte[] unzippedFile = unzippedFileCollection.get(i);
+                final String fileEntryName = orderId + "#" + i + FILE_APPENDIX;
+                zos.putNextEntry(new ZipEntry(fileEntryName));
+                zos.write(unzippedFile);
+                zos.closeEntry();
+            }
+        } catch (IOException ex) {
+            log.warn("error during creation of zip file");
+        } finally {
+            try {
+                if (zos != null) {
+                    zos.close();
+                }
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param  userKey  DOCUMENT ME!
      * @param  orderId  DOCUMENT ME!
      * @param  data     DOCUMENT ME!
@@ -492,6 +563,7 @@ public class NASProductGenerator {
         OutputStream os = null;
         try {
             is = new GZIPInputStream(new ByteArrayInputStream(data));
+//            is = new ByteArrayInputStream(data);
             os = new FileOutputStream(file);
             final byte[] buffer = new byte[8192];
             int length = is.read(buffer, 0, 8192);
@@ -535,7 +607,22 @@ public class NASProductGenerator {
             }
             return bos.toByteArray();
         } catch (FileNotFoundException ex) {
-            log.error("could not find result file for order id " + orderId);
+            try {
+                log.error("could not find result file for order id " + orderId);
+                final String filename = determineFileName(userKey, orderId);
+                is = new FileInputStream(filename.replace(FILE_APPENDIX, ".zip"));
+                final byte[] buffer = new byte[8192];
+                int length = is.read(buffer, 0, 8192);
+                while (length != -1) {
+                    bos.write(buffer, 0, length);
+                    length = is.read(buffer, 0, 8192);
+                }
+                return bos.toByteArray();
+            } catch (FileNotFoundException ex1) {
+                log.error("could not find result file for order id " + orderId);
+            } catch (IOException ex1) {
+                log.error("could not find result file for order id " + orderId);
+            }
         } catch (IOException ex) {
             log.error("error during loading result file for order id " + orderId);
         } finally {
@@ -724,47 +811,60 @@ public class NASProductGenerator {
 
         @Override
         public void run() {
-            try {
-                initAmManager();
-                final int sessionId = manager.login(USER, PW);
-                final Timer t = new Timer();
-                t.scheduleAtFixedRate(new TimerTask() {
+//            try {
+            initAmManager();
+            final int sessionId = manager.login(USER, PW);
+            final Timer t = new Timer();
+            t.scheduleAtFixedRate(new TimerTask() {
 
-                        @Override
-                        public void run() {
-//                        AMAuftragServer amServer = null;
-                            AM_AuftragServer amServer = null;
-                            try {
-                                if (interrupted) {
-                                    log.info(
-                                        "interrupting the dowload of nas order "
-                                                + orderId);
-                                    t.cancel();
-                                    return;
-                                }
-                                amServer = manager.listAuftrag(sessionId, orderId);
-                                if (amServer.getWannBeendet() == null) {
-                                    return;
-                                }
-                                t.cancel();
-                                logProtocol(manager.getProtocolGZip(sessionId, orderId));
-                                if (!interrupted) {
-                                    unzipAndSaveFile(userId, orderId, manager.getResultGZip(sessionId, orderId));
-                                    removeFromOpenOrders(userId, orderId);
-                                    downloaderMap.remove(orderId);
-                                } else {
-                                    log.info(
-                                        "interrupting the dowload of nas order "
-                                                + orderId);
-                                }
-                            } catch (RemoteException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
+                    @Override
+                    public void run() {
+                        AMAuftragServer amServer = null;
+//                            AM_AuftragServer amServer = null;
+//                            try {
+                        if (interrupted) {
+                            log.info(
+                                "interrupting the dowload of nas order "
+                                        + orderId);
+                            t.cancel();
+                            return;
                         }
-                    }, REQUEST_PERIOD, REQUEST_PERIOD);
-            } catch (RemoteException ex) {
-                log.error("Could not connect to 3A server", ex);
-            }
+                        amServer = manager.listAuftrag(sessionId, orderId);
+                        if (amServer.getWannBeendet() == null) {
+                            return;
+                        }
+                        t.cancel();
+                        logProtocol(manager.getProtocolGZip(sessionId, orderId));
+                        if (!interrupted) {
+                            final int resCount = manager.getResultCount(sessionId, orderId);
+                            if (resCount > 1) {
+                                // unzip and save all files, then zip them
+                                final ArrayList<byte[]> resultFiles = new ArrayList<byte[]>();
+                                for (int i = 0; i < resCount; i++) {
+                                    resultFiles.add(manager.getNResultGZip(sessionId, orderId, i));
+                                }
+                                saveZipFileOfUnzippedFileCollection(userId, orderId, resultFiles);
+                            } else {
+                                unzipAndSaveFile(userId, orderId, manager.getResultGZip(sessionId, orderId));
+                            }
+                            for (int i = 0; i < resCount; i++) {
+                            }
+//                                    unzipAndSaveFile(userId, orderId, manager.getResultGZip(sessionId, orderId));
+                            removeFromOpenOrders(userId, orderId);
+                            downloaderMap.remove(orderId);
+                        } else {
+                            log.info(
+                                "interrupting the download of nas order "
+                                        + orderId);
+                        }
+//                            } catch (RemoteException ex) {
+//                                Exceptions.printStackTrace(ex);
+//                            }
+                    }
+                }, REQUEST_PERIOD, REQUEST_PERIOD);
+//            } catch (RemoteException ex) {
+//                log.error("Could not connect to 3A server", ex);
+//            }
         }
 
         /**
