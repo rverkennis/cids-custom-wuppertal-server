@@ -99,8 +99,9 @@ public class NASProductGenerator {
     private final String USER;
     private final String PW;
     private final String OUTPUT_DIR;
-    private HashMap<String, HashSet<String>> openOrderMap = new HashMap<String, HashSet<String>>();
-    private HashMap<String, HashSet<String>> undeliveredOrderMap = new HashMap<String, HashSet<String>>();
+    private HashMap<String, HashMap<String, Boolean>> openOrderMap = new HashMap<String, HashMap<String, Boolean>>();
+    private HashMap<String, HashMap<String, Boolean>> undeliveredOrderMap =
+        new HashMap<String, HashMap<String, Boolean>>();
     private HashMap<String, NasProductDownloader> downloaderMap = new HashMap<String, NasProductDownloader>();
 
     //~ Constructors -----------------------------------------------------------
@@ -171,8 +172,8 @@ public class NASProductGenerator {
             undeliveredOrderMap = transformJsonMap(mapper.readValue(undeliveredOrdersLogFile, Map.class));
             // check of there are open orders that arent downloaded from the 3a server yet
             for (final String userId : openOrderMap.keySet()) {
-                final HashSet<String> openOrderIds = openOrderMap.get(userId);
-                for (final String orderId : openOrderIds) {
+                final HashMap<String, Boolean> openOrderIds = openOrderMap.get(userId);
+                for (final String orderId : openOrderIds.keySet()) {
                     final NasProductDownloader downloader = new NasProductDownloader(userId, orderId);
                     downloaderMap.put(orderId, downloader);
                     final Thread workerThread = new Thread(downloader);
@@ -195,11 +196,12 @@ public class NASProductGenerator {
      *
      * @return  DOCUMENT ME!
      */
-    private HashMap<String, HashSet<String>> transformJsonMap(final Map<String, ArrayList<String>> loadedJsonObj) {
-        final HashMap<String, HashSet<String>> map = new HashMap<String, HashSet<String>>();
-        for (final String s : loadedJsonObj.keySet()) {
-            final HashSet<String> orderIdSet = new HashSet<String>(loadedJsonObj.get(s));
-            map.put(s, orderIdSet);
+    private HashMap<String, HashMap<String, Boolean>> transformJsonMap(
+            final Map<String, HashMap<String, Boolean>> loadedJsonObj) {
+        final HashMap<String, HashMap<String, Boolean>> map = new HashMap<String, HashMap<String, Boolean>>();
+        for (final String user : loadedJsonObj.keySet()) {
+            final HashMap<String, Boolean> orderIdSet = new HashMap<String, Boolean>(loadedJsonObj.get(user));
+            map.put(user, orderIdSet);
         }
         return map;
     }
@@ -264,11 +266,8 @@ public class NASProductGenerator {
             request = request.replaceAll(REQUEST_PLACE_HOLDER, requestName);
 
             // check if this request needs to be portioned
-            final Envelope env = geom.getEnvelopeInternal();
-            final double xSize = env.getMaxX() - env.getMinX();
-            final double ySize = env.getMaxY() - env.getMinY();
 
-            if ((xSize > 500) && (ySize > 500)) {
+            if (isOrderSplitted(geom)) {
                 request = request.replaceAll(DATA_FORMAT_STD, DATA_FORMAT_500);
             }
             if (log.isDebugEnabled()) {
@@ -327,8 +326,9 @@ public class NASProductGenerator {
         final int sessionID = manager.login(USER, PW);
         final String orderId = manager.registerGZip(sessionID, gZipFile(preparedQuery));
 
-        addToOpenOrders(determineUserPrefix(user), orderId);
-        addToUndeliveredOrders(determineUserPrefix(user), orderId);
+        final boolean isSplitted = isOrderSplitted(geoms);
+        addToOpenOrders(determineUserPrefix(user), orderId, isSplitted);
+        addToUndeliveredOrders(determineUserPrefix(user), orderId, isSplitted);
 
         final NasProductDownloader downloader = new NasProductDownloader(determineUserPrefix(user), orderId);
         downloaderMap.put(orderId, downloader);
@@ -372,19 +372,19 @@ public class NASProductGenerator {
      * @return  DOCUMENT ME!
      */
     public byte[] getResultForOrder(final String orderId, final User user) {
-        final HashSet<String> openUserOrders = openOrderMap.get(determineUserPrefix(user));
-        if ((openUserOrders != null) && openUserOrders.contains(orderId)) {
+        final HashMap<String, Boolean> openUserOrders = openOrderMap.get(determineUserPrefix(user));
+        if ((openUserOrders != null) && openUserOrders.keySet().contains(orderId)) {
 //            if (log.isDebugEnabled()) {
 //                log.debug("requesting an order that isnt not done");
 //            }
             return new byte[0];
         }
-        final HashSet<String> undeliveredUserOrders = undeliveredOrderMap.get(determineUserPrefix(user));
+        final HashMap<String, Boolean> undeliveredUserOrders = undeliveredOrderMap.get(determineUserPrefix(user));
         if ((undeliveredUserOrders == null) || undeliveredUserOrders.isEmpty()) {
             log.error("there are no undelivered nas orders for the user " + user.toString());
             return null;
         }
-        if (!undeliveredUserOrders.contains(orderId)) {
+        if (!undeliveredUserOrders.keySet().contains(orderId)) {
             log.error("there is no order for user " + user.toString() + " with order id " + orderId);
             return null;
         }
@@ -399,8 +399,12 @@ public class NASProductGenerator {
      *
      * @return  DOCUMENT ME!
      */
-    public Set<String> getUndeliveredOrders(final User user) {
-        return undeliveredOrderMap.get(determineUserPrefix(user));
+    public Map<String, Boolean> getUndeliveredOrders(final User user) {
+        final HashMap<String, Boolean> undeliveredOrders = new HashMap<String, Boolean>();
+        for (final String undeliveredOrderId : undeliveredOrderMap.get(determineUserPrefix(user)).keySet()) {
+            undeliveredOrders.put(undeliveredOrderId, Boolean.TRUE);
+        }
+        return undeliveredOrders;
     }
 
     /**
@@ -669,16 +673,17 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param  userKey  userId DOCUMENT ME!
-     * @param  orderId  DOCUMENT ME!
+     * @param  userKey     userId DOCUMENT ME!
+     * @param  orderId     DOCUMENT ME!
+     * @param  isSplitted  DOCUMENT ME!
      */
-    private void addToOpenOrders(final String userKey, final String orderId) {
-        HashSet<String> openUserOders = openOrderMap.get(userKey);
+    private void addToOpenOrders(final String userKey, final String orderId, final boolean isSplitted) {
+        HashMap<String, Boolean> openUserOders = openOrderMap.get(userKey);
         if (openUserOders == null) {
-            openUserOders = new HashSet<String>();
+            openUserOders = new HashMap<String, Boolean>();
             openOrderMap.put(userKey, openUserOders);
         }
-        openUserOders.add(orderId);
+        openUserOders.put(orderId, isSplitted);
         updateJsonLogFiles();
     }
 
@@ -689,7 +694,7 @@ public class NASProductGenerator {
      * @param  orderId  DOCUMENT ME!
      */
     private void removeFromOpenOrders(final String userKey, final String orderId) {
-        final HashSet<String> openUserOrders = openOrderMap.get(userKey);
+        final HashMap<String, Boolean> openUserOrders = openOrderMap.get(userKey);
         if (openUserOrders == null) {
             log.info("there are no undelivered nas orders for the user with id " + userKey);
             return;
@@ -704,16 +709,17 @@ public class NASProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param  userKey  userId DOCUMENT ME!
-     * @param  orderId  DOCUMENT ME!
+     * @param  userKey     userId DOCUMENT ME!
+     * @param  orderId     DOCUMENT ME!
+     * @param  isSplitted  DOCUMENT ME!
      */
-    private void addToUndeliveredOrders(final String userKey, final String orderId) {
-        HashSet<String> undeliveredUserOders = undeliveredOrderMap.get(userKey);
+    private void addToUndeliveredOrders(final String userKey, final String orderId, final boolean isSplitted) {
+        HashMap<String, Boolean> undeliveredUserOders = undeliveredOrderMap.get(userKey);
         if (undeliveredUserOders == null) {
-            undeliveredUserOders = new HashSet<String>();
+            undeliveredUserOders = new HashMap<String, Boolean>();
             undeliveredOrderMap.put(userKey, undeliveredUserOders);
         }
-        undeliveredUserOders.add(orderId);
+        undeliveredUserOders.put(orderId, isSplitted);
         updateJsonLogFiles();
     }
 
@@ -724,7 +730,7 @@ public class NASProductGenerator {
      * @param  orderId  DOCUMENT ME!
      */
     private void removeFromUndeliveredOrders(final String userKey, final String orderId) {
-        final HashSet<String> undeliveredUserOders = undeliveredOrderMap.get(userKey);
+        final HashMap<String, Boolean> undeliveredUserOders = undeliveredOrderMap.get(userKey);
         if (undeliveredUserOders == null) {
             log.info("there are no undelivered nas orders for the user with id " + userKey);
             return;
@@ -777,6 +783,24 @@ public class NASProductGenerator {
      */
     private String getRequestName(final User user, final String requestId) {
         return user.getName() + "_" + requestId;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   geoms  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private boolean isOrderSplitted(final GeometryCollection geoms) {
+        final Envelope env = geoms.getEnvelopeInternal();
+        final double xSize = env.getMaxX() - env.getMinX();
+        final double ySize = env.getMaxY() - env.getMinY();
+
+        if ((xSize > 500) && (ySize > 500)) {
+            return true;
+        }
+        return false;
     }
 
     //~ Inner Classes ----------------------------------------------------------
