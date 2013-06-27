@@ -11,7 +11,6 @@
  */
 package de.cismet.cids.custom.wunda_blau.search.actions;
 
-import Sirius.server.middleware.interfaces.domainserver.MetaService;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -23,7 +22,6 @@ import org.openide.util.Exceptions;
 
 import java.io.IOException;
 
-import java.rmi.RemoteException;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -35,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 
-import de.cismet.cids.custom.utils.nas.NASProductGenerator;
 import de.cismet.cids.custom.wunda_blau.search.server.CidsMauernSearchStatement;
 
 import de.cismet.cids.server.search.AbstractCidsServerSearch;
@@ -120,7 +117,7 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
             return rs.getInt(1);
         } catch (SQLException ex) {
             LOG.error("Error during NasZaehlobjekteSearch", ex);
-            throw new SearchException("Error during Flurstuecks search");
+            throw new SearchException("Error during NasZaehlobjekteSearch");
         } finally {
             try {
                 fmeConn.close();
@@ -156,7 +153,7 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
             return rs.getInt(1);
         } catch (SQLException ex) {
             LOG.error("Error during NasZaehlobjekteSearch", ex);
-            throw new SearchException("Error during Flurstuecks search");
+            throw new SearchException("Error during NasZaehlobjekteSearch");
         } finally {
             try {
                 fmeConn.close();
