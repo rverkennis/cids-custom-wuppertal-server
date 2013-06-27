@@ -11,7 +11,6 @@
  */
 package de.cismet.cids.custom.wunda_blau.search.actions;
 
-
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
@@ -21,7 +20,6 @@ import org.apache.log4j.Logger;
 import org.openide.util.Exceptions;
 
 import java.io.IOException;
-
 
 import java.sql.Connection;
 import java.sql.DriverManager;
