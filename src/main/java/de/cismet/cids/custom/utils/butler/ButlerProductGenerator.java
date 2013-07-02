@@ -56,11 +56,9 @@ public class ButlerProductGenerator {
 
     //~ Instance fields --------------------------------------------------------
 
-    // Map that lists all open Orders to a user
-    private HashMap<User, HashMap<String, ButlerRequestInfo>> openOrderMap =
-        new HashMap<User, HashMap<String, ButlerRequestInfo>>();
-    private HashMap<User, HashMap<String, ButlerRequestInfo>> undeliveredOrderMap =
-        new HashMap<User, HashMap<String, ButlerRequestInfo>>();
+    // Map that lists all open Orders to a user id
+    private HashMap<Integer, HashMap<String, ButlerRequestInfo>> openOrderMap =
+        new HashMap<Integer, HashMap<String, ButlerRequestInfo>>();
     private final String requestFolder;
     private final String resultBaseFolder;
     private boolean initError = false;
@@ -124,7 +122,7 @@ public class ButlerProductGenerator {
             File reqeustFile = null;
             FileWriter fw = null;
             final String filename = determineRequestFileName(user, orderNumber);
-//            addToOpenOrderMap(user, orderNumber, product);
+            addToOpenOrderMap(user, filename, orderNumber, product);
             try {
                 reqeustFile = new File(requestFolder + System.getProperty("file.separator") + filename
                                 + FILE_APPENDIX);
@@ -177,7 +175,9 @@ public class ButlerProductGenerator {
             resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + shapeResultDir);
         } else if (format.equals("tif")) {
             resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + tifResultDir);
-        } else {
+        } else if (format.equals("geotif")) {
+            resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + tifResultDir);
+        }else {
             // this must be true here: format.equals("pdf")
             resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + pdfResultDir);
         }
@@ -215,9 +215,9 @@ public class ButlerProductGenerator {
      * @return  DOCUMENT ME!
      */
     public HashMap<String, ButlerRequestInfo> getAllOpenUserRequests(final User user) {
-        if (openOrderMap.containsKey(user)) {
+        if (openOrderMap.keySet().contains(user.getId())) {
             final HashMap<String, ButlerRequestInfo> result = new HashMap<String, ButlerRequestInfo>();
-            result.putAll(openOrderMap.get(user));
+            result.putAll(openOrderMap.get(user.getId()));
             return result;
         }
         return null;
@@ -437,10 +437,11 @@ public class ButlerProductGenerator {
             final String requestId,
             final String userOrderId,
             final ButlerProduct product) {
-        HashMap<String, ButlerRequestInfo> openUserOrders = (HashMap<String, ButlerRequestInfo>)openOrderMap.get(user);
+        HashMap<String, ButlerRequestInfo> openUserOrders = (HashMap<String, ButlerRequestInfo>)openOrderMap.get(
+                user.getId());
         if (openUserOrders == null) {
             openUserOrders = new HashMap<String, ButlerRequestInfo>();
-            openOrderMap.put(user, openUserOrders);
+            openOrderMap.put(user.getId(), openUserOrders);
         }
         openUserOrders.put(requestId, new ButlerRequestInfo(userOrderId, product));
         updateJsonLogFiles();
@@ -454,7 +455,7 @@ public class ButlerProductGenerator {
      */
     private void removeFromOpenOrders(final User user, final String requestId) {
         final HashMap<String, ButlerRequestInfo> openUserOrders = (HashMap<String, ButlerRequestInfo>)openOrderMap.get(
-                user);
+                user.getId());
         if (openUserOrders != null) {
             openUserOrders.remove(requestId);
         }
