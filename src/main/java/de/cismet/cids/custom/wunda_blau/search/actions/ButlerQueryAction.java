@@ -99,21 +99,20 @@ public class ButlerQueryAction implements UserAwareServerAction {
                             .createButlerRequest(
                                 orderId,
                                 user,
-                                product.getKey(),
+                                product,
                                 minX,
                                 minY,
                                 maxX,
                                 maxY,
-                                product.getColorDepth(),
-                                product.getResolution().getKey(),
-                                true,
-                                product.getFormat().getKey());
+                                true);
             }
         } else if (method == METHOD_TYPE.GET) {
             if ((product != null) && (product.getFormat() != null)) {
                 return ButlerProductGenerator.getInstance()
-                            .getResultForRequest(requestId, product.getFormat().getKey());
+                            .getResultForRequest(user, requestId, product.getFormat().getKey());
             }
+        } else if (method == METHOD_TYPE.GET_ALL) {
+            return ButlerProductGenerator.getInstance().getAllOpenUserRequests(user);
         }
 
         return null;

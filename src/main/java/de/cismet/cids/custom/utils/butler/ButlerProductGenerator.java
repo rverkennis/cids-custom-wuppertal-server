@@ -30,7 +30,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Properties;
+
+import de.cismet.cids.custom.utils.nas.NasProductInfo;
 
 /**
  * DOCUMENT ME!
@@ -53,6 +56,11 @@ public class ButlerProductGenerator {
 
     //~ Instance fields --------------------------------------------------------
 
+    // Map that lists all open Orders to a user
+    private HashMap<User, HashMap<String, ButlerRequestInfo>> openOrderMap =
+        new HashMap<User, HashMap<String, ButlerRequestInfo>>();
+    private HashMap<User, HashMap<String, ButlerRequestInfo>> undeliveredOrderMap =
+        new HashMap<User, HashMap<String, ButlerRequestInfo>>();
     private final String requestFolder;
     private final String resultBaseFolder;
     private boolean initError = false;
@@ -93,35 +101,30 @@ public class ButlerProductGenerator {
      *
      * @param   orderNumber  DOCUMENT ME!
      * @param   user         that sends the request
-     * @param   productId    of the product that shall be generated
+     * @param   product      of the product that shall be generated
      * @param   minX         lower x coordinate of the rectangle the product is generated for
      * @param   minY         lower y coordinate of the rectangle the product is generated for
      * @param   maxX         upper x coordinate of the rectangle the product is generated for
      * @param   maxY         lower y coordinate of the rectangle the product is generated for
-     * @param   colorDepth   of the product that shall be generated
-     * @param   resolution   of the product that shall be generated
      * @param   isGeoTiff    default no, set only to true if <code>format.equals("tif")</code> and the output file
      *                       should end with *.geotiff instead of *.tif
-     * @param   format       one of the following <code>"dxf"</code>, <code>"tif"</code>, <code>"shp"</code>
      *
      * @return  the requestId necessary to retrive results with
      *          {@link #getResultForRequest(java.lang.String, java.lang.String)} method
      */
     public String createButlerRequest(final String orderNumber,
             final User user,
-            final String productId,
+            final ButlerProduct product,
             final double minX,
             final double minY,
             final double maxX,
             final double maxY,
-            final int colorDepth,
-            final String resolution,
-            final boolean isGeoTiff,
-            final String format) {
+            final boolean isGeoTiff) {
         if (!initError) {
             File reqeustFile = null;
             FileWriter fw = null;
             final String filename = determineRequestFileName(user, orderNumber);
+//            addToOpenOrderMap(user, orderNumber, product);
             try {
                 reqeustFile = new File(requestFolder + System.getProperty("file.separator") + filename
                                 + FILE_APPENDIX);
@@ -132,7 +135,16 @@ public class ButlerProductGenerator {
                 }
                 fw = new FileWriter(reqeustFile);
                 final BufferedWriter bw = new BufferedWriter(fw);
-                bw.write(getRequestLine(productId, minX, minY, maxX, maxY, colorDepth, resolution, isGeoTiff, format));
+                bw.write(getRequestLine(
+                        product.getKey(),
+                        minX,
+                        minY,
+                        maxX,
+                        maxY,
+                        product.getColorDepth(),
+                        product.getResolution().getKey(),
+                        isGeoTiff,
+                        product.getFormat().getKey()));
                 bw.close();
                 return filename;
             } catch (IOException ex) {
@@ -151,12 +163,13 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
+     * @param   user       DOCUMENT ME!
      * @param   requestId  represents the request
      * @param   format     must be one of the following "dxf", "shp","tif"
      *
      * @return  A list of bytes representing the result files <code>null</code> if there are no result files
      */
-    public ArrayList<byte[]> getResultForRequest(final String requestId, final String format) {
+    public ArrayList<byte[]> getResultForRequest(final User user, final String requestId, final String format) {
         File resultDir;
         if (format.equals("dxf")) {
             resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + dxfResultDir);
@@ -185,12 +198,29 @@ public class ButlerProductGenerator {
             return null;
         }
 
+        removeFromOpenOrders(user, requestId);
         final ArrayList<byte[]> result = new ArrayList<byte[]>();
         for (int i = 0; i < resultFiles.length; i++) {
             result.add(loadFile(resultFiles[i]));
         }
 
         return result;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   user  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public HashMap<String, ButlerRequestInfo> getAllOpenUserRequests(final User user) {
+        if (openOrderMap.containsKey(user)) {
+            final HashMap<String, ButlerRequestInfo> result = new HashMap<String, ButlerRequestInfo>();
+            result.putAll(openOrderMap.get(user));
+            return result;
+        }
+        return null;
     }
 
     /**
@@ -243,9 +273,9 @@ public class ButlerProductGenerator {
         final GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(new Date());
 
-        return user.getName() + "_" + requestId + "_" + cal.get(GregorianCalendar.HOUR_OF_DAY)
-                    + "+" + cal.get(GregorianCalendar.MINUTE)
-                    + "+" + cal.get(GregorianCalendar.SECOND);
+        return user.getName() + "_" + requestId; // + "_" + cal.get(GregorianCalendar.HOUR_OF_DAY)
+//                    + "+" + cal.get(GregorianCalendar.MINUTE)
+//                    + "+" + cal.get(GregorianCalendar.SECOND);
     }
 
     /**
@@ -358,25 +388,30 @@ public class ButlerProductGenerator {
         final double maxX = 370300d;
         final double maxY = 5680300d;
         final int colorDepth = 8;
-        final String resolution = "0.50";
+        final ButlerResolution resolution = new ButlerResolution();
+        resolution.setKey("0.50");
         final boolean useGeoTif = true;
-        final String format = "tif";
+        final ButlerFormat format = new ButlerFormat("tif");
         System.out.println("Sending request to butler");
+        final ButlerProduct product = new ButlerProduct();
+        product.setKey(productId);
+        product.setColorDepth(colorDepth);
+        product.setResolution(resolution);
+        product.setFormat(format);
         final String requestId = generator.createButlerRequest(
                 "cismet_test",
                 user,
-                productId,
+                product,
                 minX,
                 minY,
                 maxX,
                 maxY,
-                colorDepth,
-                resolution,
-                useGeoTif,
-                format);
+                useGeoTif);
         System.out.println("Sent request, Received request id " + requestId + " for result polling");
         System.out.println("Polling result for request id " + requestId);
-        ArrayList<byte[]> files = generator.getResultForRequest(requestId, format);
+        ArrayList<byte[]> files = generator.getResultForRequest(new User(1, "admin", "wunda_blau"),
+                requestId,
+                format.getKey());
         while (files == null) {
             System.out.println("Requesting results for " + requestId + " is not finished, try later again");
             try {
@@ -384,9 +419,51 @@ public class ButlerProductGenerator {
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            files = generator.getResultForRequest(requestId, format);
+            files = generator.getResultForRequest(new User(1, "admin", "wunda_blau"), requestId, format.getKey());
         }
 
         System.out.println("Received " + files.size() + " Files from butler server");
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  user         DOCUMENT ME!
+     * @param  requestId    filename DOCUMENT ME!
+     * @param  userOrderId  DOCUMENT ME!
+     * @param  product      DOCUMENT ME!
+     */
+    private void addToOpenOrderMap(final User user,
+            final String requestId,
+            final String userOrderId,
+            final ButlerProduct product) {
+        HashMap<String, ButlerRequestInfo> openUserOrders = (HashMap<String, ButlerRequestInfo>)openOrderMap.get(user);
+        if (openUserOrders == null) {
+            openUserOrders = new HashMap<String, ButlerRequestInfo>();
+            openOrderMap.put(user, openUserOrders);
+        }
+        openUserOrders.put(requestId, new ButlerRequestInfo(userOrderId, product));
+        updateJsonLogFiles();
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  user       DOCUMENT ME!
+     * @param  requestId  DOCUMENT ME!
+     */
+    private void removeFromOpenOrders(final User user, final String requestId) {
+        final HashMap<String, ButlerRequestInfo> openUserOrders = (HashMap<String, ButlerRequestInfo>)openOrderMap.get(
+                user);
+        if (openUserOrders != null) {
+            openUserOrders.remove(requestId);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void updateJsonLogFiles() {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
