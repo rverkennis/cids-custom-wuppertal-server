@@ -13,6 +13,12 @@ package de.cismet.cids.custom.utils.butler;
 
 import Sirius.server.newuser.User;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import org.apache.log4j.Logger;
 
 import org.openide.util.Exceptions;
@@ -31,9 +37,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
-
-import de.cismet.cids.custom.utils.nas.NasProductInfo;
 
 /**
  * DOCUMENT ME!
@@ -56,11 +61,13 @@ public class ButlerProductGenerator {
 
     //~ Instance fields --------------------------------------------------------
 
+    final File openOrdersLogFile;
     // Map that lists all open Orders to a user id
     private HashMap<Integer, HashMap<String, ButlerRequestInfo>> openOrderMap =
         new HashMap<Integer, HashMap<String, ButlerRequestInfo>>();
     private final String requestFolder;
     private final String resultBaseFolder;
+    private final String butlerBasePath;
     private boolean initError = false;
 
     //~ Constructors -----------------------------------------------------------
@@ -74,8 +81,23 @@ public class ButlerProductGenerator {
         try {
             final Properties butlerProperties = new Properties();
             butlerProperties.load(ButlerProductGenerator.class.getResourceAsStream("butler.properties"));
-            requestFolder = butlerProperties.getProperty("butler1RequestPath");
-            resultBaseFolder = butlerProperties.getProperty("butler1ResultPath");
+            butlerBasePath = butlerProperties.getProperty("butlerBasePath");
+            requestFolder = butlerBasePath + System.getProperty("file.separator")
+                        + butlerProperties.getProperty("butler1RequestPath");
+            resultBaseFolder = butlerBasePath + System.getProperty("file.separator")
+                        + butlerProperties.getProperty("butler1ResultPath");
+            final StringBuilder fileNameBuilder = new StringBuilder(butlerBasePath);
+            fileNameBuilder.append(System.getProperty("file.separator"));
+            openOrdersLogFile = new File(fileNameBuilder.toString() + "openOrders.json");
+            if (!openOrdersLogFile.exists()) {
+                openOrdersLogFile.createNewFile();
+                // serialiaze en empty map to the file to avoid parsing exception
+                updateJsonLogFiles();
+            }
+            if (!(openOrdersLogFile.isFile() && openOrdersLogFile.canWrite())) {
+                LOG.error("can not write to open order log file");
+            }
+            loadOpenOrdersFromJsonFile();
         } catch (IOException ex) {
             LOG.error("Could not load butler properties", ex);
             throw new RuntimeException(ex);
@@ -177,7 +199,7 @@ public class ButlerProductGenerator {
             resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + tifResultDir);
         } else if (format.equals("geotif")) {
             resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + tifResultDir);
-        }else {
+        } else {
             // this must be true here: format.equals("pdf")
             resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + pdfResultDir);
         }
@@ -465,6 +487,92 @@ public class ButlerProductGenerator {
      * DOCUMENT ME!
      */
     private void updateJsonLogFiles() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final ObjectMapper mapper = new ObjectMapper();
+        final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+
+        try {
+            final HashMap<Integer, OpenOrderMapWrapper> mapToSerialize = new HashMap<Integer, OpenOrderMapWrapper>();
+            for (final Integer i : openOrderMap.keySet()) {
+                final OpenOrderMapWrapper openuserOders = new OpenOrderMapWrapper(openOrderMap.get(i));
+                mapToSerialize.put(i, openuserOders);
+            }
+            writer.writeValue(openOrdersLogFile, mapToSerialize);
+        } catch (IOException ex) {
+            LOG.error("error during writing open butler orders to log file", ex);
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    private void loadOpenOrdersFromJsonFile() {
+        try {
+            final ObjectMapper mapper = new ObjectMapper();
+            final HashMap<Integer, OpenOrderMapWrapper> wrapperMap = mapper.readValue(
+                    openOrdersLogFile,
+                    new TypeReference<HashMap<Integer, OpenOrderMapWrapper>>() {
+                    });
+
+            for (final Integer i : wrapperMap.keySet()) {
+                openOrderMap.put(i, wrapperMap.get(i).getMap());
+            }
+        } catch (JsonParseException ex) {
+            LOG.error("Could not parse nas order log files", ex);
+        } catch (JsonMappingException ex) {
+            LOG.error("error while json mapping/unmarshalling of nas order log file", ex);
+        } catch (IOException ex) {
+            LOG.error("error while loading nas order log file", ex);
+        }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private static final class OpenOrderMapWrapper {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private HashMap<String, ButlerRequestInfo> map;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new OpenOrderMapWrapper object.
+         */
+        public OpenOrderMapWrapper() {
+        }
+
+        /**
+         * Creates a new OpenOrderMapWrapper object.
+         *
+         * @param  map  DOCUMENT ME!
+         */
+        public OpenOrderMapWrapper(final HashMap<String, ButlerRequestInfo> map) {
+            this.map = map;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public HashMap<String, ButlerRequestInfo> getMap() {
+            return map;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  map  DOCUMENT ME!
+         */
+        public void setMap(final HashMap<String, ButlerRequestInfo> map) {
+            this.map = map;
+        }
     }
 }

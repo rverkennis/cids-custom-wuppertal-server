@@ -39,6 +39,12 @@ public class ButlerRequestInfo implements Serializable {
         this.product = product;
     }
 
+    /**
+     * Creates a new ButlerRequestInfo object.
+     */
+    private ButlerRequestInfo() {
+    }
+
     //~ Methods ----------------------------------------------------------------
 
     /**
