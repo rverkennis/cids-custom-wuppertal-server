@@ -28,6 +28,7 @@ public class ButlerProduct implements Serializable {
     int colorDepth;
     ButlerResolution resolution;
     ButlerFormat format;
+    String volumeParamText;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -124,5 +125,23 @@ public class ButlerProduct implements Serializable {
      */
     public void setFormat(final ButlerFormat outputFormat) {
         this.format = outputFormat;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getVolumeParamText() {
+        return volumeParamText;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  volumeParamText  DOCUMENT ME!
+     */
+    public void setVolumeParamText(final String volumeParamText) {
+        this.volumeParamText = volumeParamText;
     }
 }

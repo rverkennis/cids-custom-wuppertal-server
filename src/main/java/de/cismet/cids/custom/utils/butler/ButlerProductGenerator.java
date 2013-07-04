@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -189,7 +190,7 @@ public class ButlerProductGenerator {
      *
      * @return  A list of bytes representing the result files <code>null</code> if there are no result files
      */
-    public ArrayList<byte[]> getResultForRequest(final User user, final String requestId, final String format) {
+    public Map<String, byte[]> getResultForRequest(final User user, final String requestId, final String format) {
         File resultDir;
         if (format.equals("dxf")) {
             resultDir = new File(resultBaseFolder + System.getProperty("file.separator") + dxfResultDir);
@@ -221,9 +222,11 @@ public class ButlerProductGenerator {
         }
 
         removeFromOpenOrders(user, requestId);
-        final ArrayList<byte[]> result = new ArrayList<byte[]>();
+//        final ArrayList<byte[]> result = new ArrayList<byte[]>();
+        final Map<String, byte[]> result = new HashMap<String, byte[]>();
         for (int i = 0; i < resultFiles.length; i++) {
-            result.add(loadFile(resultFiles[i]));
+//            result.add(loadFile(resultFiles[i]));
+            result.put(resultFiles[i].getName(), loadFile(resultFiles[i]));
         }
 
         return result;
@@ -399,57 +402,6 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
-     * @param  args  DOCUMENT ME!
-     */
-    public static void main(final String[] args) {
-        final ButlerProductGenerator generator = ButlerProductGenerator.getInstance();
-        final User user = new User(100, "admin", "wunda_blau");
-        final String productId = "0404";
-        final double minX = 370000d;
-        final double minY = 5680000d;
-        final double maxX = 370300d;
-        final double maxY = 5680300d;
-        final int colorDepth = 8;
-        final ButlerResolution resolution = new ButlerResolution();
-        resolution.setKey("0.50");
-        final boolean useGeoTif = true;
-        final ButlerFormat format = new ButlerFormat("tif");
-        System.out.println("Sending request to butler");
-        final ButlerProduct product = new ButlerProduct();
-        product.setKey(productId);
-        product.setColorDepth(colorDepth);
-        product.setResolution(resolution);
-        product.setFormat(format);
-        final String requestId = generator.createButlerRequest(
-                "cismet_test",
-                user,
-                product,
-                minX,
-                minY,
-                maxX,
-                maxY,
-                useGeoTif);
-        System.out.println("Sent request, Received request id " + requestId + " for result polling");
-        System.out.println("Polling result for request id " + requestId);
-        ArrayList<byte[]> files = generator.getResultForRequest(new User(1, "admin", "wunda_blau"),
-                requestId,
-                format.getKey());
-        while (files == null) {
-            System.out.println("Requesting results for " + requestId + " is not finished, try later again");
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            files = generator.getResultForRequest(new User(1, "admin", "wunda_blau"), requestId, format.getKey());
-        }
-
-        System.out.println("Received " + files.size() + " Files from butler server");
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @param  user         DOCUMENT ME!
      * @param  requestId    filename DOCUMENT ME!
      * @param  userOrderId  DOCUMENT ME!
@@ -480,7 +432,11 @@ public class ButlerProductGenerator {
                 user.getId());
         if (openUserOrders != null) {
             openUserOrders.remove(requestId);
+            if (openUserOrders.isEmpty()) {
+                openOrderMap.remove(user.getId());
+            }
         }
+        updateJsonLogFiles();
     }
 
     /**
@@ -523,6 +479,16 @@ public class ButlerProductGenerator {
         } catch (IOException ex) {
             LOG.error("error while loading nas order log file", ex);
         }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  user       DOCUMENT ME!
+     * @param  requestId  DOCUMENT ME!
+     */
+    public void removeOrder(final User user, final String requestId) {
+        removeFromOpenOrders(user, requestId);
     }
 
     //~ Inner Classes ----------------------------------------------------------

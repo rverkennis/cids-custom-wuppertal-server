@@ -113,6 +113,8 @@ public class ButlerQueryAction implements UserAwareServerAction {
             }
         } else if (method == METHOD_TYPE.GET_ALL) {
             return ButlerProductGenerator.getInstance().getAllOpenUserRequests(user);
+        } else if (method == METHOD_TYPE.CANCEL) {
+            ButlerProductGenerator.getInstance().removeOrder(user, requestId);
         }
 
         return null;
