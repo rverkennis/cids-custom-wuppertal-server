@@ -227,16 +227,18 @@ public class CidsAlkisSearchStatement extends AbstractCidsServerSearch implement
                 }
 
                 case FLURSTUECKSNUMMER: {
+                    String flurstueckClause;
+                    if(flurstuecksnummer.endsWith("/%")) {
+                        flurstueckClause = "(lp.alkis_id ilike '" + flurstuecksnummer + "' or lp.alkis_id ilike '" + flurstuecksnummer.substring(0, flurstuecksnummer.length()-2) + "')";
+                    } else {
+                        flurstueckClause = "lp.alkis_id ilike '" + flurstuecksnummer + "'";
+                    }
                     if (resulttyp == Resulttyp.FLURSTUECK) {
                         query =
-                            "select distinct (select id from cs_class where table_name ilike 'alkis_landparcel') as class_id, lp.id as object_id, lp.alkis_id from alkis_landparcel lp ,geom where geom.id = lp.geometrie and lp.alkis_id ilike '"
-                                    + flurstuecksnummer
-                                    + "'";
+                            "select distinct (select id from cs_class where table_name ilike 'alkis_landparcel') as class_id, lp.id as object_id, lp.alkis_id from alkis_landparcel lp ,geom where geom.id = lp.geometrie and " + flurstueckClause;
                     } else {
                         query =
-                            "select distinct (select id from cs_class where table_name ilike 'alkis_buchungsblatt') as class_id, jt.buchungsblatt as object_id,bb.buchungsblattcode from  alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and lp.alkis_id ilike '"
-                                    + flurstuecksnummer
-                                    + "'";
+                            "select distinct (select id from cs_class where table_name ilike 'alkis_buchungsblatt') as class_id, jt.buchungsblatt as object_id,bb.buchungsblattcode from  alkis_landparcel lp,alkis_flurstueck_to_buchungsblaetter jt,alkis_buchungsblatt bb,geom where geom.id = lp.geometrie and lp.buchungsblaetter=jt.flurstueck_reference and jt.buchungsblatt=bb.id and " + flurstueckClause;
                     }
                     break;
                 }
