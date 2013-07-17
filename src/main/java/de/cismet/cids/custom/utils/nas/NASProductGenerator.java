@@ -10,6 +10,7 @@ package de.cismet.cids.custom.utils.nas;
 import Sirius.server.newuser.User;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -133,6 +134,8 @@ public class NASProductGenerator {
             }
             if (!undeliveredOrdersLogFile.exists()) {
                 undeliveredOrdersLogFile.createNewFile();
+                // serialiaze en empty map to the file to avoid parsing exception
+                updateJsonLogFiles();
             }
             if (!(openOrdersLogFile.isFile() && openOrdersLogFile.canWrite())
                         || !(undeliveredOrdersLogFile.isFile() && undeliveredOrdersLogFile.canWrite())) {
@@ -163,27 +166,19 @@ public class NASProductGenerator {
      * DOCUMENT ME!
      */
     private void initFromOrderLogFiles() {
-        try {
-            final ObjectMapper mapper = new ObjectMapper();
-            openOrderMap = transformJsonMap(mapper.readValue(openOrdersLogFile, Map.class));
-            undeliveredOrderMap = transformJsonMap(mapper.readValue(undeliveredOrdersLogFile, Map.class));
-            // check of there are open orders that arent downloaded from the 3a server yet
-            for (final String userId : openOrderMap.keySet()) {
-                final HashMap<String, NasProductInfo> openOrderIds = openOrderMap.get(userId);
-                for (final String orderId : openOrderIds.keySet()) {
-                    final NasProductDownloader downloader = new NasProductDownloader(userId, orderId);
-                    downloaderMap.put(orderId, downloader);
-                    final Thread workerThread = new Thread(downloader);
-                    workerThread.start();
-                }
-            }
-        } catch (JsonParseException ex) {
-            log.error("Could not parse nas order log files", ex);
-        } catch (JsonMappingException ex) {
-            log.error("error while json mapping/unmarshalling of nas order log file", ex);
-        } catch (IOException ex) {
-            log.error("error while loading nas order log file", ex);
-        }
+//        try {
+//            openOrderMap = transformJsonMap(mapper.readValue(openOrdersLogFile, Map.class));
+//            undeliveredOrderMap = transformJsonMap(mapper.readValue(undeliveredOrdersLogFile, Map.class));
+        loadFromLogFile(openOrderMap, openOrdersLogFile);
+        loadFromLogFile(undeliveredOrderMap, undeliveredOrdersLogFile);
+        // check of there are open orders that arent downloaded from the 3a server yet for (final String userId :
+        // openOrderMap.keySet()) { final HashMap<String, NasProductInfo> openOrderIds = openOrderMap.get(userId); for
+        // (final String orderId : openOrderIds.keySet()) { final NasProductDownloader downloader = new
+        // NasProductDownloader(userId, orderId); downloaderMap.put(orderId, downloader); final Thread workerThread =
+        // new Thread(downloader); workerThread.start(); } } } catch (JsonParseException ex) { log.error("Could not
+        // parse nas order log files", ex); } catch (JsonMappingException ex) { log.error("error while json
+        // mapping/unmarshalling of nas order log file", ex); } catch (IOException ex) { log.error("error while loading
+        // nas order log file", ex); }
     }
 
     /**
@@ -762,10 +757,22 @@ public class NASProductGenerator {
         final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
 
         try {
-            writer.writeValue(undeliveredOrdersLogFile, undeliveredOrderMap);
-            writer.writeValue(openOrdersLogFile, openOrderMap);
+            final HashMap<String, MapWrapper> openOrdersToSerialize = new HashMap<String, MapWrapper>();
+            for (final String i : openOrderMap.keySet()) {
+                final MapWrapper openuserOders = new MapWrapper(openOrderMap.get(i));
+                openOrdersToSerialize.put(i, openuserOders);
+            }
+            writer.writeValue(openOrdersLogFile, openOrdersToSerialize);
+
+            final HashMap<String, MapWrapper> undeliveredOrdersToSerialize = new HashMap<String, MapWrapper>();
+            for (final String i : undeliveredOrderMap.keySet()) {
+                final MapWrapper openuserOders = new MapWrapper(undeliveredOrderMap.get(i));
+                undeliveredOrdersToSerialize.put(i, openuserOders);
+            }
+
+            writer.writeValue(undeliveredOrdersLogFile, undeliveredOrdersToSerialize);
         } catch (IOException ex) {
-            log.error("error during writing open and undelivered order maps to file", ex);
+            log.error("error during writing open butler orders to log file", ex);
         }
     }
 
@@ -813,6 +820,32 @@ public class NASProductGenerator {
             return true;
         }
         return false;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  map                DOCUMENT ME!
+     * @param  openOrdersLogFile  DOCUMENT ME!
+     */
+    private void loadFromLogFile(final HashMap<String, HashMap<String, NasProductInfo>> map,
+            final File openOrdersLogFile) {
+        final ObjectMapper mapper = new ObjectMapper();
+        try {
+            final HashMap<String, MapWrapper> wrapperMap = mapper.readValue(
+                    openOrdersLogFile,
+                    new TypeReference<HashMap<String, MapWrapper>>() {
+                    });
+            for (final String s : wrapperMap.keySet()) {
+                map.put(s, wrapperMap.get(s).getMap());
+            }
+        } catch (JsonParseException ex) {
+            log.error("Could not parse nas order log files", ex);
+        } catch (JsonMappingException ex) {
+            log.error("error while json mapping/unmarshalling of nas order log file", ex);
+        } catch (IOException ex) {
+            log.error("error while loading nas order log file", ex);
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -910,6 +943,55 @@ public class NASProductGenerator {
          */
         public void setInterrupted(final boolean interrupted) {
             this.interrupted = interrupted;
+        }
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @version  $Revision$, $Date$
+     */
+    private static final class MapWrapper {
+
+        //~ Instance fields ----------------------------------------------------
+
+        private HashMap<String, NasProductInfo> map;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new OpenOrderMapWrapper object.
+         */
+        public MapWrapper() {
+        }
+
+        /**
+         * Creates a new OpenOrderMapWrapper object.
+         *
+         * @param  map  DOCUMENT ME!
+         */
+        public MapWrapper(final HashMap<String, NasProductInfo> map) {
+            this.map = map;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @return  DOCUMENT ME!
+         */
+        public HashMap<String, NasProductInfo> getMap() {
+            return map;
+        }
+
+        /**
+         * DOCUMENT ME!
+         *
+         * @param  map  DOCUMENT ME!
+         */
+        public void setMap(final HashMap<String, NasProductInfo> map) {
+            this.map = map;
         }
     }
 }
