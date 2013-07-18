@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<PLWXML version="1.3">
+<REQUEST mode="WMPS_SYNCHRON">
+<GET_LAYOUT>
+  <PROPERTIES>
+  <MAPNAME name=$VORLAGE$/>
+  <MAPMXD file="Wuppertal_Plot"/>
+  <MAPREF x=$RECHTSWERT$ y=$HOCHWERT$ scale="1000" rot="0"/>
+  <MAPATTR AAA_Gemeinde="Wuppertal" Gemeinde="Wuppertal" AAA_Kreis="Wuppertal" Kreis="Wuppertal" AAA_Regierungsbezirk="Düsseldorf" Regierungsbezirk="Düsseldorf" AAA_Katasteramt1="Katasteramt Wuppertal" AMT="Katasteramt Wuppertal" Katasteramt="Katasteramt Wuppertal" AAA_Herausgeber_Copyright1="Katasteramt Wuppertal" AAA_Katasteramt_Strasse="Johannes-Rau-Platz 1" Strasse="Johannes-Rau-Platz 1" AAA_Katasteramt_Ort="42275 Wuppertal" Ort="42275 Wuppertal" AAA_Herausgeber1="" AAA_Kartentitel="Karte" AAA_Praeshin1="Flurkarte NRW 1:500" AAA_Praesentationshinweis1="Flurkarte NRW 1:500" PLOT_LAYOUT_SELECT_PICTURES="logo-aaa-wappen-wup-sw" AAA_Zusatzlegende="OFF" PLOT_LAYOUT_KW_PREFIX_RW="32"/>
+  <OUTPUT dpi=$AUFLOESUNG$ type="eps" account="GIS" bem="WUP" bnk=$DATEINAME$ copies="0" date=$DATUM$ device=$AUSGABEFORMAT$ host="s102x285" height="0" width="0" mode="PLOTSERVER" rotation="0" state="O" time=$ZEIT$ user="plot" />
+  </PROPERTIES>
+<DATAFRAME id="MAIN">
+  <LAYERLIST>
+  <LAYERDEF id="0"/>
+  <LAYERDEF id="102"/>
+  <LAYERDEF id="106"/>
+  <LAYERDEF id="110"/>
+  <LAYERDEF id="114"/>
+  <LAYERDEF id="122"/>
+  <LAYERDEF id="126"/>
+  <LAYERDEF id="130"/>
+  <LAYERDEF id="134"/>
+  <LAYERDEF id="246"/>
+  <LAYERDEF id="250"/>
+  <LAYERDEF id="254"/>
+  <LAYERDEF id="258"/>
+  <LAYERDEF id="266"/>
+  <LAYERDEF id="270"/>
+  <LAYERDEF id="274"/>
+  <LAYERDEF id="278"/>
+  <LAYERDEF id="390"/>
+  <LAYERDEF id="394"/>
+  <LAYERDEF id="490"/>
+  </LAYERLIST>
+</DATAFRAME>
+</GET_LAYOUT>
+</REQUEST></PLWXML>

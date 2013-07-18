@@ -23,18 +23,22 @@ import org.apache.log4j.Logger;
 
 import org.openide.util.Exceptions;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.net.URL;
+
+import java.text.SimpleDateFormat;
+
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -59,6 +63,14 @@ public class ButlerProductGenerator {
     private static final String shapeResultDir = "shape";
     private static final String FILE_APPENDIX = ".but";
     private static final String SEPERATOR = ";";
+    private static final String EASTING = "$RECHTSWERT$";
+    private static final String NORTHING = "$HOCHWERT$";
+    private static final String BOX_SIZE = "$VORLAGE$";
+    private static final String RESOLUTION = "$AUFLOESUNG$";
+    private static final String FORMAT = "$AUSGABEFORMAT$";
+    private static final String FILE_NAME = "$DATEINAME$";
+    private static final String TIME = "$ZEIT$";
+    private static final String DATE = "$DATUM$";
 
     //~ Instance fields --------------------------------------------------------
 
@@ -67,6 +79,7 @@ public class ButlerProductGenerator {
     private HashMap<Integer, HashMap<String, ButlerRequestInfo>> openOrderMap =
         new HashMap<Integer, HashMap<String, ButlerRequestInfo>>();
     private final String requestFolder;
+    private final String butler2RequestFolder;
     private final String resultBaseFolder;
     private final String butlerBasePath;
     private boolean initError = false;
@@ -85,6 +98,8 @@ public class ButlerProductGenerator {
             butlerBasePath = butlerProperties.getProperty("butlerBasePath");
             requestFolder = butlerBasePath + System.getProperty("file.separator")
                         + butlerProperties.getProperty("butler1RequestPath");
+            butler2RequestFolder = butlerBasePath + System.getProperty("file.separator")
+                        + butlerProperties.getProperty("butler2RequestPath");
             resultBaseFolder = butlerBasePath + System.getProperty("file.separator")
                         + butlerProperties.getProperty("butler1ResultPath");
             final StringBuilder fileNameBuilder = new StringBuilder(butlerBasePath);
@@ -184,9 +199,77 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
+     * @param   orderNumber  DOCUMENT ME!
+     * @param   user         DOCUMENT ME!
+     * @param   product      DOCUMENT ME!
+     * @param   boxSize      DOCUMENT ME!
+     * @param   middleE      DOCUMENT ME!
+     * @param   middleN      DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String createButler2Request(final String orderNumber,
+            final User user,
+            final ButlerProduct product,
+            final String boxSize,
+            final double middleE,
+            final double middleN) {
+        if (!initError || (product == null)) {
+            /*
+             * 1. load the respective template 2. replace the values in the template 3. save the file in the right
+             * folder
+             */
+            File reqeustFile = null;
+            FileWriter fw = null;
+            final String filename = determineRequestFileName(user, orderNumber);
+            final String request = getButler2RequestLine(product, middleE, middleN, boxSize, filename);
+            if (request == null) {
+                LOG.error("The generated Butler 2 reqeust is null.");
+                return null;
+            }
+
+            addToOpenOrderMap(user, filename, orderNumber, product);
+
+            try {
+                if (product.getFormat() == null) {
+                    LOG.error("Product Format can not be null for a butler 2 wmps request");
+                    return null;
+                }
+                String fileAppendix = product.getFormat().getKey();
+                if (fileAppendix.equals("dxf")) {
+                    fileAppendix = "acad";
+                }
+                reqeustFile = new File(butler2RequestFolder + System.getProperty("file.separator") + filename
+                                + "." + fileAppendix);
+                if (reqeustFile.exists()) {
+                    // should not happen;
+                    LOG.error("butler 2 request file already exists");
+                    return null;
+                }
+                fw = new FileWriter(reqeustFile);
+                final BufferedWriter bw = new BufferedWriter(fw);
+                bw.write(request);
+                bw.close();
+                return filename;
+            } catch (IOException ex) {
+                LOG.error("", ex);
+            } finally {
+                try {
+                    fw.close();
+                } catch (IOException ex) {
+                    LOG.error("", ex);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   user       DOCUMENT ME!
      * @param   requestId  represents the request
-     * @param   format     must be one of the following "dxf", "shp","tif"
+     * @param   format     must be one of the following "dxf", "shp","tif","pdf"
      *
      * @return  A list of bytes representing the result files <code>null</code> if there are no result files
      */
@@ -367,6 +450,67 @@ public class ButlerProductGenerator {
     /**
      * DOCUMENT ME!
      *
+     * @param   product   DOCUMENT ME!
+     * @param   x         DOCUMENT ME!
+     * @param   y         DOCUMENT ME!
+     * @param   box_size  DOCUMENT ME!
+     * @param   filename  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String getButler2RequestLine(final ButlerProduct product,
+            final double x,
+            final double y,
+            final String box_size,
+            final String filename) {
+        final String productKey = product.getKey();
+        final String template = loadTemplate(productKey);
+
+        String result = template.replace(EASTING, "" + x);
+        result = result.replace(NORTHING, "" + y);
+        result = result.replace(BOX_SIZE, "" + box_size);
+        result = result.replace(RESOLUTION, product.getResolution().getKey());
+        result = result.replace(FORMAT, product.getFormat().getKey());
+        final SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+        final SimpleDateFormat tf = new SimpleDateFormat("kkmmss");
+        result = result.replace(TIME, tf.format(new Date()));
+        result = result.replace(DATE, df.format(new Date()));
+        result = result.replace(FILE_NAME, filename);
+
+        return result;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   productKey  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    private String loadTemplate(final String productKey) {
+        final URL templateUrl = ButlerProductGenerator.class.getResource("template_" + productKey + ".xml");
+        try {
+            final StringBuffer templateBuffer = new StringBuffer();
+            final BufferedReader fr = new BufferedReader(new FileReader(templateUrl.getFile()));
+            final char[] buf = new char[1024];
+            int numRead = 0;
+            while ((numRead = fr.read(buf)) != -1) {
+                final String readData = String.valueOf(buf, 0, numRead);
+                templateBuffer.append(readData);
+            }
+            fr.close();
+            return templateBuffer.toString();
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @param   f  userKey DOCUMENT ME!
      *
      * @return  DOCUMENT ME!
@@ -489,6 +633,32 @@ public class ButlerProductGenerator {
      */
     public void removeOrder(final User user, final String requestId) {
         removeFromOpenOrders(user, requestId);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  args  DOCUMENT ME!
+     */
+    public static void main(final String[] args) {
+        final ButlerProductGenerator gen = new ButlerProductGenerator();
+        final ButlerProduct p = new ButlerProduct();
+        p.setKey("0901");
+        final ButlerFormat f = new ButlerFormat();
+        f.setKey("tif");
+        p.setFormat(f);
+        final ButlerResolution res = new ButlerResolution();
+        res.setKey("ohne");
+        p.setResolution(res);
+        final User user = new User(0, "admin", "WUNDA_BLAU");
+        final String id = gen.createButler2Request("test", user, p, "EXPORT100", 375800, 5682800);
+
+        Map<String, byte[]> result = gen.getResultForRequest(user, id, "tif");
+        while (result == null) {
+            result = gen.getResultForRequest(user, id, "tif");
+        }
+
+        System.out.println("fertich");
     }
 
     //~ Inner Classes ----------------------------------------------------------

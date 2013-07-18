@@ -52,7 +52,7 @@ public class ButlerQueryAction implements UserAwareServerAction {
 
         //~ Enum constants -----------------------------------------------------
 
-        REQUEST_ID, ORDER_ID, BUTLER_PRODUCT, MIN_X, MIN_Y, MAX_X, MAX_Y, METHOD
+        IS_WMPS, REQUEST_ID, ORDER_ID, BUTLER_PRODUCT, MIN_X, MIN_Y, MAX_X, MAX_Y, METHOD, BOX_SIZE
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -71,7 +71,9 @@ public class ButlerQueryAction implements UserAwareServerAction {
         double minY = 0;
         double maxX = 0;
         double maxY = 0;
+        String box = null;
 
+        boolean useWmps = false;
         for (final ServerActionParameter sap : params) {
             final String sapKey = sap.getKey();
             if (sapKey.equals(PARAMETER_TYPE.ORDER_ID.toString())) {
@@ -90,21 +92,30 @@ public class ButlerQueryAction implements UserAwareServerAction {
                 method = (METHOD_TYPE)sap.getValue();
             } else if (sapKey.equals(PARAMETER_TYPE.REQUEST_ID.toString())) {
                 requestId = (String)sap.getValue();
+            } else if (sapKey.equals(PARAMETER_TYPE.IS_WMPS.toString())) {
+                useWmps = ((Boolean)sap.getValue()).booleanValue();
+            } else if (sapKey.equals(PARAMETER_TYPE.BOX_SIZE.toString())) {
+                box = (String)sap.getValue();
             }
         }
 
         if (method == METHOD_TYPE.ADD) {
             if ((product != null) && (product.getKey() != null)) {
-                return ButlerProductGenerator.getInstance()
-                            .createButlerRequest(
-                                orderId,
-                                user,
-                                product,
-                                minX,
-                                minY,
-                                maxX,
-                                maxY,
-                                true);
+                if (!useWmps) {
+                    return ButlerProductGenerator.getInstance()
+                                .createButlerRequest(
+                                    orderId,
+                                    user,
+                                    product,
+                                    minX,
+                                    minY,
+                                    maxX,
+                                    maxY,
+                                    true);
+                } else {
+                    return ButlerProductGenerator.getInstance()
+                                .createButler2Request(orderId, user, product, box, minX, minY);
+                }
             }
         } else if (method == METHOD_TYPE.GET) {
             if ((product != null) && (product.getFormat() != null)) {
