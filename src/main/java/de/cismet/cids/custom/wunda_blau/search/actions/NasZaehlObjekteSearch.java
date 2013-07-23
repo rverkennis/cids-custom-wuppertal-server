@@ -105,9 +105,9 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
             if ((geometry instanceof Polygon) || (geometry instanceof MultiPolygon)) { // with buffer for geostring
                 sb.append(FLURSTUECK_STMT.replace(
                         "<geom>",
-                        "GeometryFromText('"
+                        "st_buffer(GeometryFromText('"
                                 + geostring
-                                + "')"));
+                                + "'), 0.000001)"));
             }
             st.execute(sb.toString());
             final ResultSet rs = st.getResultSet();
@@ -141,9 +141,9 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
             if ((geometry instanceof Polygon) || (geometry instanceof MultiPolygon)) { // with buffer for geostring
                 sb.append(GEAEUDE_STMT.replace(
                         "<geom>",
-                        "GeometryFromText('"
+                        "st_buffer(GeometryFromText('"
                                 + geostring
-                                + "')"));
+                                + "'), 0.000001)"));
             }
             st.execute(sb.toString());
             final ResultSet rs = st.getResultSet();
