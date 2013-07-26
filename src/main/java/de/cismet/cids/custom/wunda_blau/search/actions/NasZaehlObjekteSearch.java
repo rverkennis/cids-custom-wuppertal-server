@@ -11,6 +11,8 @@
  */
 package de.cismet.cids.custom.wunda_blau.search.actions;
 
+import Sirius.server.middleware.interfaces.domainserver.MetaService;
+
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
@@ -20,6 +22,8 @@ import org.apache.log4j.Logger;
 import org.openide.util.Exceptions;
 
 import java.io.IOException;
+
+import java.rmi.RemoteException;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -53,6 +57,13 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
         "select count(*) as Anzahl from ax_flurstueck where st_intersects(wkb_geometry,<geom>)";
     private static final String GEAEUDE_STMT =
         "select count(*) as Anzahl from ax_gebaeude where st_intersects(wkb_geometry,<geom>)";
+    private static final String ADRESE_STMT = "SELECT DISTINCT i.class_id , i.object_id, s.stringrep"
+                + " FROM geom g, cs_attr_object_derived i LEFT OUTER JOIN cs_stringrepcache s ON ( s.class_id =i.class_id AND s.object_id=i.object_id )"
+                + " WHERE i.attr_class_id = ( SELECT cs_class.id FROM cs_class WHERE cs_class.table_name::text = 'GEOM'::text )"
+                + " AND i.attr_object_id = g.id"
+                + " AND i.class_id IN (6)"
+                + " AND geo_field && GeometryFromText('<geom>')"
+                + " AND intersects(st_buffer(geo_field, 0.000001),st_buffer(GeometryFromText('<geom>'), 0.000001)) ORDER BY 1,2,3";
     private static Connection fmeConn = null;
 
     //~ Enums ------------------------------------------------------------------
@@ -66,7 +77,7 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
 
         //~ Enum constants -----------------------------------------------------
 
-        FLURSTUECKE, GEBAEUDE
+        FLURSTUECKE, GEBAEUDE, ADRESSE
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -164,6 +175,40 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
     /**
      * DOCUMENT ME!
      *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SearchException  DOCUMENT ME!
+     */
+    private int getAddressenCount() throws SearchException {
+        final MetaService ms = (MetaService)getActiveLocalServers().get("WUNDA_BLAU");
+
+        if (ms != null) {
+            try {
+                final StringBuilder sb = new StringBuilder();
+                final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geometry);
+                if ((geometry instanceof Polygon) || (geometry instanceof MultiPolygon)) { // with buffer for geostring
+                    sb.append(ADRESE_STMT.replace(
+                            "<geom>",
+                            geostring));
+                }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("query: " + sb.toString());                                  // NOI18N
+                }
+                final ArrayList<ArrayList> lists = ms.performCustomSearch(sb.toString());
+
+                return lists.size();
+            } catch (RemoteException ex) {
+                LOG.error(ex.getMessage(), ex);
+            }
+        } else {
+            LOG.error("active local server not found"); // NOI18N
+        }
+        return 0;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @throws  SearchException  DOCUMENT ME!
      */
     private void initConnection() throws SearchException {
@@ -191,6 +236,8 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
             resultList.add(getFlurstueckObjectsCount());
         } else if (searchType == NasSearchType.GEBAEUDE) {
             resultList.add(getGebaeudeObjectsCount());
+        } else if (searchType == NasSearchType.ADRESSE) {
+            resultList.add(getAddressenCount());
         }
         return resultList;
     }
