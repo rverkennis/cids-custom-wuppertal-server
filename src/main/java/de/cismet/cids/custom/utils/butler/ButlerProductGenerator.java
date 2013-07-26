@@ -30,10 +30,13 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 import java.net.URL;
 
@@ -220,7 +223,7 @@ public class ButlerProductGenerator {
              * folder
              */
             File reqeustFile = null;
-            FileWriter fw = null;
+            BufferedWriter bw = null;
             final String filename = determineRequestFileName(user, orderNumber);
             final String request = getButler2RequestLine(product, middleE, middleN, boxSize, filename);
             if (request == null) {
@@ -246,8 +249,7 @@ public class ButlerProductGenerator {
                     LOG.error("butler 2 request file already exists");
                     return null;
                 }
-                fw = new FileWriter(reqeustFile);
-                final BufferedWriter bw = new BufferedWriter(fw);
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reqeustFile), "ISO-8859-1"));
                 bw.write(request);
                 bw.close();
                 return filename;
@@ -255,7 +257,7 @@ public class ButlerProductGenerator {
                 LOG.error("", ex);
             } finally {
                 try {
-                    fw.close();
+                    bw.close();
                 } catch (IOException ex) {
                     LOG.error("", ex);
                 }
@@ -381,9 +383,9 @@ public class ButlerProductGenerator {
         final GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(new Date());
 
-        return user.getName() + "_" + requestId; // + "_" + cal.get(GregorianCalendar.HOUR_OF_DAY)
-//                    + "+" + cal.get(GregorianCalendar.MINUTE)
-//                    + "+" + cal.get(GregorianCalendar.SECOND);
+        return user.getName() + "_" + requestId + "_" + cal.get(GregorianCalendar.HOUR_OF_DAY)
+                    + "_" + cal.get(GregorianCalendar.MINUTE)
+                    + "_" + cal.get(GregorianCalendar.SECOND);
     }
 
     /**
@@ -431,7 +433,15 @@ public class ButlerProductGenerator {
         buffer.append(SEPERATOR);
 
         // resolution
-        buffer.append(resolution);
+        double res = 0;
+        if (resolution.equals("ohne")) {
+            buffer.append("0");
+        } else {
+            final Double d = Double.parseDouble(resolution);
+            res = d / 100;
+//            buffer.append("0.");
+            buffer.append(res);
+        }
         buffer.append(SEPERATOR);
 
         // geotif
@@ -470,7 +480,15 @@ public class ButlerProductGenerator {
         result = result.replace(NORTHING, "" + y);
         result = result.replace(BOX_SIZE, "" + box_size);
         result = result.replace(RESOLUTION, product.getResolution().getKey());
-        result = result.replace(FORMAT, product.getFormat().getKey());
+        String format = "";
+        if (product.getFormat().getKey().equals("dxf")) {
+            format = "ACAD";
+        } else if (product.getFormat().getKey().equals("pdf")) {
+            format = "PDF";
+        } else if (product.getFormat().getKey().equals("tif")) {
+            format = "TIF#8";
+        }
+        result = result.replace(FORMAT, format);
         final SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
         final SimpleDateFormat tf = new SimpleDateFormat("kkmmss");
         result = result.replace(TIME, tf.format(new Date()));
@@ -491,7 +509,9 @@ public class ButlerProductGenerator {
         final URL templateUrl = ButlerProductGenerator.class.getResource("template_" + productKey + ".xml");
         try {
             final StringBuffer templateBuffer = new StringBuffer();
-            final BufferedReader fr = new BufferedReader(new FileReader(templateUrl.getFile()));
+            final BufferedReader fr = new BufferedReader(new InputStreamReader(
+                        ButlerProductGenerator.class.getResourceAsStream("template_" + productKey + ".xml"),
+                        "ISO-8859-1"));
             final char[] buf = new char[1024];
             int numRead = 0;
             while ((numRead = fr.read(buf)) != -1) {

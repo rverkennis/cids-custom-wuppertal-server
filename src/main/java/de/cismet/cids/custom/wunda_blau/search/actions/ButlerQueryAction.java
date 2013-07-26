@@ -13,6 +13,7 @@ package de.cismet.cids.custom.wunda_blau.search.actions;
 
 import Sirius.server.newuser.User;
 
+import de.cismet.cids.custom.utils.butler.ButlerFormat;
 import de.cismet.cids.custom.utils.butler.ButlerProduct;
 import de.cismet.cids.custom.utils.butler.ButlerProductGenerator;
 
@@ -102,6 +103,12 @@ public class ButlerQueryAction implements UserAwareServerAction {
         if (method == METHOD_TYPE.ADD) {
             if ((product != null) && (product.getKey() != null)) {
                 if (!useWmps) {
+                    final boolean isGeoTif = product.getFormat().getKey().equals("geotif");
+                    if (isGeoTif) {
+                        final ButlerFormat f = product.getFormat();
+                        f.setKey("tif");
+                        product.setFormat(f);
+                    }
                     return ButlerProductGenerator.getInstance()
                                 .createButlerRequest(
                                     orderId,
@@ -111,7 +118,7 @@ public class ButlerQueryAction implements UserAwareServerAction {
                                     minY,
                                     maxX,
                                     maxY,
-                                    true);
+                                    isGeoTif);
                 } else {
                     return ButlerProductGenerator.getInstance()
                                 .createButler2Request(orderId, user, product, box, minX, minY);
