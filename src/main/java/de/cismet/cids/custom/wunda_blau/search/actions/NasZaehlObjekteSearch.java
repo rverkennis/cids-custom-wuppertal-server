@@ -57,6 +57,10 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
         "select count(*) as Anzahl from ax_flurstueck where st_intersects(wkb_geometry,<geom>)";
     private static final String GEAEUDE_STMT =
         "select count(*) as Anzahl from ax_gebaeude where st_intersects(wkb_geometry,<geom>)";
+    private static final String DACH_PKT_STMT =
+        "SELECT count (*) FROM sic_regen_dachpg where st_intersects(wkb_geometry,<geom>)";
+    private static final String BODEN_PKT_STMT =
+        "SELECT count (*) FROM sic_regen_bodenpg where st_intersects(wkb_geometry,<geom>)";
     private static final String ADRESE_STMT = "SELECT DISTINCT i.class_id , i.object_id, s.stringrep"
                 + " FROM geom g, cs_attr_object_derived i LEFT OUTER JOIN cs_stringrepcache s ON ( s.class_id =i.class_id AND s.object_id=i.object_id )"
                 + " WHERE i.attr_class_id = ( SELECT cs_class.id FROM cs_class WHERE cs_class.table_name::text = 'GEOM'::text )"
@@ -77,13 +81,13 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
 
         //~ Enum constants -----------------------------------------------------
 
-        FLURSTUECKE, GEBAEUDE, ADRESSE
+        FLURSTUECKE, GEBAEUDE, ADRESSE, DACHPUNKTE, BODENPUNKTE
     }
 
     //~ Instance fields --------------------------------------------------------
 
     final Geometry geometry;
-    final NasSearchType searchType;
+    final NasZaehlObjekteSearch.NasSearchType searchType;
 
     //~ Constructors -----------------------------------------------------------
 
@@ -93,7 +97,7 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
      * @param  g     DOCUMENT ME!
      * @param  type  useCids DOCUMENT ME!
      */
-    public NasZaehlObjekteSearch(final Geometry g, final NasSearchType type) {
+    public NasZaehlObjekteSearch(final Geometry g, final NasZaehlObjekteSearch.NasSearchType type) {
         geometry = g;
         this.searchType = type;
     }
@@ -108,32 +112,7 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
      * @throws  SearchException  DOCUMENT ME!
      */
     private int getFlurstueckObjectsCount() throws SearchException {
-        try {
-            initConnection();
-            final Statement st = fmeConn.createStatement();
-            final StringBuilder sb = new StringBuilder();
-            final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geometry);
-            if ((geometry instanceof Polygon) || (geometry instanceof MultiPolygon)) { // with buffer for geostring
-                sb.append(FLURSTUECK_STMT.replace(
-                        "<geom>",
-                        "st_buffer(GeometryFromText('"
-                                + geostring
-                                + "'), 0.000001)"));
-            }
-            st.execute(sb.toString());
-            final ResultSet rs = st.getResultSet();
-            rs.next();
-            return rs.getInt(1);
-        } catch (SQLException ex) {
-            LOG.error("Error during NasZaehlobjekteSearch", ex);
-            throw new SearchException("Error during NasZaehlobjekteSearch");
-        } finally {
-            try {
-                fmeConn.close();
-            } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+        return getObjectsCount(FLURSTUECK_STMT);
     }
 
     /**
@@ -144,13 +123,48 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
      * @throws  SearchException  DOCUMENT ME!
      */
     private int getGebaeudeObjectsCount() throws SearchException {
+        return getObjectsCount(GEAEUDE_STMT);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SearchException  DOCUMENT ME!
+     */
+    private int getBodenpunkteObjectsCount() throws SearchException {
+        return getObjectsCount(BODEN_PKT_STMT);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SearchException  DOCUMENT ME!
+     */
+    private int getDachpunkteObjectsCount() throws SearchException {
+        return getObjectsCount(DACH_PKT_STMT);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param   statement  DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     *
+     * @throws  SearchException  DOCUMENT ME!
+     */
+    private int getObjectsCount(final String statement) throws SearchException {
         try {
             initConnection();
             final Statement st = fmeConn.createStatement();
             final StringBuilder sb = new StringBuilder();
             final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geometry);
             if ((geometry instanceof Polygon) || (geometry instanceof MultiPolygon)) { // with buffer for geostring
-                sb.append(GEAEUDE_STMT.replace(
+                sb.append(statement.replace(
                         "<geom>",
                         "st_buffer(GeometryFromText('"
                                 + geostring
@@ -232,12 +246,16 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
     @Override
     public Collection performServerSearch() throws SearchException {
         final ArrayList<Integer> resultList = new ArrayList<Integer>();
-        if (searchType == NasSearchType.FLURSTUECKE) {
+        if (searchType == NasZaehlObjekteSearch.NasSearchType.FLURSTUECKE) {
             resultList.add(getFlurstueckObjectsCount());
-        } else if (searchType == NasSearchType.GEBAEUDE) {
+        } else if (searchType == NasZaehlObjekteSearch.NasSearchType.GEBAEUDE) {
             resultList.add(getGebaeudeObjectsCount());
-        } else if (searchType == NasSearchType.ADRESSE) {
+        } else if (searchType == NasZaehlObjekteSearch.NasSearchType.ADRESSE) {
             resultList.add(getAddressenCount());
+        } else if (searchType == NasZaehlObjekteSearch.NasSearchType.BODENPUNKTE) {
+            resultList.add(getBodenpunkteObjectsCount());
+        } else if (searchType == NasZaehlObjekteSearch.NasSearchType.DACHPUNKTE) {
+            resultList.add(getDachpunkteObjectsCount());
         }
         return resultList;
     }
@@ -248,7 +266,9 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
      * @param  args  DOCUMENT ME!
      */
     public static void main(final String[] args) {
-        final NasZaehlObjekteSearch search = new NasZaehlObjekteSearch(null, NasSearchType.GEBAEUDE);
+        final NasZaehlObjekteSearch search = new NasZaehlObjekteSearch(
+                null,
+                NasZaehlObjekteSearch.NasSearchType.GEBAEUDE);
         try {
             search.initConnection();
         } catch (SearchException ex) {
