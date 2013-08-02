@@ -70,6 +70,14 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
                 + " AND intersects(st_buffer(geo_field, 0.000001),st_buffer(GeometryFromText('<geom>'), 0.000001)) ORDER BY 1,2,3";
     private static Connection fmeConn = null;
 
+    static {
+        try {
+            initConnection();
+        } catch (SearchException ex) {
+            LOG.fatal("error during initialisation of fme db connection", ex);
+        }
+    }
+
     //~ Enums ------------------------------------------------------------------
 
     /**
@@ -157,10 +165,14 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
      *
      * @throws  SearchException  DOCUMENT ME!
      */
-    private int getObjectsCount(final String statement) throws SearchException {
+    private synchronized int getObjectsCount(final String statement) throws SearchException {
+        Statement st = null;
         try {
-            initConnection();
-            final Statement st = fmeConn.createStatement();
+//            initConnection();
+            if (fmeConn.isClosed()) {
+                initConnection();
+            }
+            st = fmeConn.createStatement();
             final StringBuilder sb = new StringBuilder();
             final String geostring = PostGisGeometryFactory.getPostGisCompliantDbString(geometry);
             if ((geometry instanceof Polygon) || (geometry instanceof MultiPolygon)) { // with buffer for geostring
@@ -170,16 +182,22 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
                                 + geostring
                                 + "'), 0.000001)"));
             }
-            st.execute(sb.toString());
-            final ResultSet rs = st.getResultSet();
-            rs.next();
-            return rs.getInt(1);
+            if ((st != null) && !fmeConn.isClosed() && !st.isClosed()) {
+                st.execute(sb.toString());
+                LOG.fatal("query: " + sb.toString());
+                final ResultSet rs = st.getResultSet();
+                rs.next();
+                return rs.getInt(1);
+            }
+            return 0;
         } catch (SQLException ex) {
             LOG.error("Error during NasZaehlobjekteSearch", ex);
             throw new SearchException("Error during NasZaehlobjekteSearch");
         } finally {
             try {
-                fmeConn.close();
+                if (st != null) {
+                    st.close();
+                }
             } catch (SQLException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -225,7 +243,7 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
      *
      * @throws  SearchException  DOCUMENT ME!
      */
-    private void initConnection() throws SearchException {
+    private static void initConnection() throws SearchException {
         try {
             final Properties serviceProperties = new Properties();
             serviceProperties.load(NasZaehlObjekteSearch.class.getResourceAsStream("fme_db_conn.properties"));
@@ -269,10 +287,10 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
         final NasZaehlObjekteSearch search = new NasZaehlObjekteSearch(
                 null,
                 NasZaehlObjekteSearch.NasSearchType.GEBAEUDE);
-        try {
-            search.initConnection();
-        } catch (SearchException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+//        try {
+////            search.initConnection();
+//        } catch (SearchException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
     }
 }
