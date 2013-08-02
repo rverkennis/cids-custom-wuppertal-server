@@ -184,7 +184,9 @@ public class NasZaehlObjekteSearch extends AbstractCidsServerSearch {
             }
             if ((st != null) && !fmeConn.isClosed() && !st.isClosed()) {
                 st.execute(sb.toString());
-                LOG.fatal("query: " + sb.toString());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("query: " + sb.toString());
+                }
                 final ResultSet rs = st.getResultSet();
                 rs.next();
                 return rs.getInt(1);
