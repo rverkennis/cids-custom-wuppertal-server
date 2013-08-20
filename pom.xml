@@ -82,7 +82,7 @@
         </dependency>
         <dependency>
             <groupId>de.aedsicad</groupId>
-            <artifactId>3AServer</artifactId>
+            <artifactId>aaaserver</artifactId>
             <version>6.1.7.0</version>
         </dependency>
     </dependencies>
