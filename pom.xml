@@ -81,8 +81,8 @@
             <version>1.0.3</version>
         </dependency>
         <dependency>
-            <groupId>de.cismet.cids</groupId>
-            <artifactId>3AServer</artifactId>
+            <groupId>de.aedsicad</groupId>
+            <artifactId>aaaserver</artifactId>
             <version>6.1.7.0</version>
         </dependency>
     </dependencies>
