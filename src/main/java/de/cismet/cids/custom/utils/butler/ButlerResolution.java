@@ -24,6 +24,7 @@ public class ButlerResolution implements Serializable {
     //~ Instance fields --------------------------------------------------------
 
     String key;
+    String description;
 
     //~ Methods ----------------------------------------------------------------
 
@@ -45,8 +46,26 @@ public class ButlerResolution implements Serializable {
         this.key = name;
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return  DOCUMENT ME!
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  description  DOCUMENT ME!
+     */
+    public void setDescription(final String description) {
+        this.description = description;
+    }
+
     @Override
     public String toString() {
-        return key;
+        return key + " " + description;
     }
 }
