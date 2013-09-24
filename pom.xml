@@ -16,6 +16,13 @@
 
     <name>cids Custom Wuppertal ServerStuff</name>
     <description>!!! description pending !!!</description>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License</name>
+            <distribution>repo</distribution>
+            <url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
+        </license>
+    </licenses>
 
     <prerequisites>
         <maven>3</maven>
@@ -67,6 +74,16 @@
             <groupId>axis</groupId>
             <artifactId>axis</artifactId>
             <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.ogc</groupId>
+            <artifactId>ogc-tools-gml-jts</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>de.aedsicad</groupId>
+            <artifactId>aaaserver</artifactId>
+            <version>6.1.7.0</version>
         </dependency>
     </dependencies>
 
